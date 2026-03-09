@@ -73,10 +73,13 @@ fun HomeScreen(navController: NavController? = null) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFFF5F5F5))
+                .background(Color(0xFFF5F5F5)),
+            contentPadding = PaddingValues(
+                top = paddingValues.calculateTopPadding(),
+                bottom = paddingValues.calculateBottomPadding() + 16.dp
+            )
         ) {
-            // Weather Card - İndi kliklənə biləndir
+            // Weather Card
             item {
                 WeatherCard(
                     temperature = "28°C",
@@ -111,8 +114,9 @@ fun HomeScreen(navController: NavController? = null) {
                 FeaturedArticleSection()
             }
 
+            // Son boşluq
             item {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -134,7 +138,7 @@ fun WeatherCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        onClick = onClick // Kartın klikləmə özəlliyi
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier

@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onAppearanceClick: () -> Unit) { // Parametr olaraq klik funksiyasını qəbul edir
+fun ProfileScreen(onAppearanceClick: () -> Unit) {
     val primaryGreen = Color(0xFF2E7D32)
     val lightGreen = Color(0xFF4CAF50)
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -46,10 +47,15 @@ fun ProfileScreen(onAppearanceClick: () -> Unit) { // Parametr olaraq klik funks
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
                 .background(Color(0xFFF5F5F5))
+                .verticalScroll(scrollState)
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                )
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
             ProfileHeaderCard(
                 name = "Rajesh Kumar",
                 location = "Ludhiana, Punjab",
@@ -81,7 +87,6 @@ fun ProfileScreen(onAppearanceClick: () -> Unit) { // Parametr olaraq klik funks
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // SettingsSection-a klik funksiyasını ötürürük
             SettingsSection(onAppearanceClick = onAppearanceClick)
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -110,9 +115,187 @@ fun ProfileScreen(onAppearanceClick: () -> Unit) { // Parametr olaraq klik funks
 }
 
 @Composable
+fun ProfileHeaderCard(name: String, location: String, membershipType: String, backgroundColor: Color) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.size(80.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = Color.White
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .align(Alignment.BottomEnd)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color(0xFF4CAF50)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.White.copy(alpha = 0.9f)
+                    )
+                    Text(
+                        location,
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+                Text(
+                    membershipType,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    icon: ImageVector,
+    value: String,
+    label: String,
+    iconBackgroundColor: Color,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(iconBackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp),
+                    tint = iconColor
+                )
+            }
+            Text(
+                value,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = iconColor
+            )
+            Text(
+                label,
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+@Composable
+fun ContactInformationCard(phone: String, email: String, address: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Text(
+                "Contact Information",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            ContactInfoRow(Icons.Default.Phone, phone)
+            Spacer(modifier = Modifier.height(16.dp))
+            ContactInfoRow(Icons.Default.Email, email)
+            Spacer(modifier = Modifier.height(16.dp))
+            ContactInfoRow(Icons.Default.LocationOn, address)
+        }
+    }
+}
+
+@Composable
+fun ContactInfoRow(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.Gray
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text,
+            fontSize = 15.sp,
+            color = Color.Black.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
 fun SettingsSection(onAppearanceClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -128,21 +311,28 @@ fun SettingsSection(onAppearanceClick: () -> Unit) {
 
             SettingItem(Icons.Outlined.Settings, "Account Settings", onClick = { /* TODO */ })
             SettingItem(Icons.Outlined.Notifications, "Notifications", onClick = { /* TODO */ })
-
-            // Appearance üçün ötürülən funksiyanı istifadə edirik
             SettingItem(
                 icon = Icons.Outlined.DarkMode,
                 title = "Appearance",
                 onClick = onAppearanceClick
             )
-
-            SettingItem(Icons.Outlined.Shield, "Privacy & Security", onClick = { /* TODO */ }, showDivider = false)
+            SettingItem(
+                Icons.Outlined.Shield,
+                "Privacy & Security",
+                onClick = { /* TODO */ },
+                showDivider = false
+            )
         }
     }
 }
 
 @Composable
-fun SettingItem(icon: ImageVector, title: String, onClick: () -> Unit, showDivider: Boolean = true) {
+fun SettingItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit,
+    showDivider: Boolean = true
+) {
     Column {
         Row(
             modifier = Modifier
@@ -151,13 +341,28 @@ fun SettingItem(icon: ImageVector, title: String, onClick: () -> Unit, showDivid
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Black.copy(alpha = 0.6f))
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = Color.Black.copy(alpha = 0.6f)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(title, fontSize = 15.sp, color = Color.Black, modifier = Modifier.weight(1f))
-            Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray)
+            Text(
+                title,
+                fontSize = 15.sp,
+                color = Color.Black,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = Color.Gray
+            )
         }
         if (showDivider) {
-            HorizontalDivider( // M3-də Divider yerinə HorizontalDivider istifadə olunur
+            HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 color = Color.LightGray.copy(alpha = 0.3f),
                 thickness = 1.dp
@@ -166,91 +371,65 @@ fun SettingItem(icon: ImageVector, title: String, onClick: () -> Unit, showDivid
     }
 }
 
-// Digər köməkçi funksiyalar (Dəyişməyib, sadəcə kodun bütövlüyü üçün saxlanılıb)
-@Composable
-fun ProfileHeaderCard(name: String, location: String, membershipType: String, backgroundColor: Color) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(80.dp)) {
-                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.3f)), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.White)
-                }
-                Box(modifier = Modifier.size(28.dp).align(Alignment.BottomEnd).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp), tint = Color(0xFF4CAF50))
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(16.dp), tint = Color.White.copy(alpha = 0.9f))
-                    Text(location, fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
-                }
-                Text(membershipType, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.White)
-            }
-        }
-    }
-}
-
-@Composable
-fun StatCard(icon: ImageVector, value: String, label: String, iconBackgroundColor: Color, iconColor: Color, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Box(modifier = Modifier.size(56.dp).clip(CircleShape).background(iconBackgroundColor), contentAlignment = Alignment.Center) {
-                Icon(icon, null, modifier = Modifier.size(28.dp), tint = iconColor)
-            }
-            Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = iconColor)
-            Text(label, fontSize = 14.sp, color = Color.Gray)
-        }
-    }
-}
-
-@Composable
-fun ContactInformationCard(phone: String, email: String, address: String) {
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-            Text("Contact Information", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(20.dp))
-            ContactInfoRow(Icons.Default.Phone, phone)
-            Spacer(modifier = Modifier.height(16.dp))
-            ContactInfoRow(Icons.Default.Email, email)
-            Spacer(modifier = Modifier.height(16.dp))
-            ContactInfoRow(Icons.Default.LocationOn, address)
-        }
-    }
-}
-
-@Composable
-fun ContactInfoRow(icon: ImageVector, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, modifier = Modifier.size(20.dp), tint = Color.Gray)
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text, fontSize = 15.sp, color = Color.Black.copy(alpha = 0.8f))
-    }
-}
-
 @Composable
 fun SupportSection() {
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
         Column {
-            Text("Support", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(20.dp, 12.dp))
+            Text(
+                "Support",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+            )
             SettingItem(Icons.Outlined.HelpOutline, "Help Center", onClick = { })
-            SettingItem(Icons.Outlined.Phone, "Contact Support", onClick = { }, showDivider = false)
+            SettingItem(
+                Icons.Outlined.Phone,
+                "Contact Support",
+                onClick = { },
+                showDivider = false
+            )
         }
     }
 }
 
 @Composable
 fun LogoutButton() {
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
-        Row(modifier = Modifier.fillMaxWidth().clickable { }.padding(20.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Logout, null, tint = Color.Red, modifier = Modifier.size(20.dp))
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { }
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Logout,
+                contentDescription = null,
+                tint = Color.Red,
+                modifier = Modifier.size(20.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Logout", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Red)
+            Text(
+                "Logout",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Red
+            )
         }
     }
 }
