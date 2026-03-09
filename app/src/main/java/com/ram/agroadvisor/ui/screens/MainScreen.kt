@@ -100,6 +100,9 @@ fun MainScreen(navController: NavController? = null) {
                     }
                 }
                 4 -> ProfileScreen(
+                    onAccountSettingsClick = {
+                        navController?.navigate("account_settings_screen")
+                    },
                     onAppearanceClick = {
                         navController?.navigate("appearance_screen")
                     }

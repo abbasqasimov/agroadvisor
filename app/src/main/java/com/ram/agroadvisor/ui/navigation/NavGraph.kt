@@ -12,35 +12,51 @@ import com.ram.agroadvisor.ui.screens.authentication.*
 import com.ram.agroadvisor.ui.screens.home.WeatherScreen
 import com.ram.agroadvisor.ui.screens.profile.AppearanceScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
+import com.ram.agroadvisor.ui.screens.profile.AccountSettingsScreen
 
 sealed class Screen(val route: String) {
+
     object Welcome : Screen("welcome")
     object Login : Screen("login")
     object SignUp : Screen("signup")
-    object FieldDetails : Screen("field_details") // Yeni əlavə edildi
+    object FieldDetails : Screen("field_details")
+
     object Main : Screen("main")
+
     object Home : Screen("home")
     object Weather : Screen("weather")
+
     object AIAssistant : Screen("ai_assistant")
+
     object Irrigation : Screen("irrigation")
     object CropGuide : Screen("crop_guide")
     object MarketPrice : Screen("market_price")
+
     object Profile : Screen("profile")
+
     object Appearance : Screen("appearance_screen")
+
+    object AccountSettings : Screen("account_settings_screen") // əlavə edildi
 }
 
 @Composable
 fun NavGraph(startDestination: String = Screen.Welcome.route) {
+
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+
         composable(Screen.Welcome.route) {
             WelcomeScreen(
-                onLoginClick = { navController.navigate(Screen.Login.route) },
-                onRegisterClick = { navController.navigate(Screen.SignUp.route) }
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                onRegisterClick = {
+                    navController.navigate(Screen.SignUp.route)
+                }
             )
         }
 
@@ -51,21 +67,23 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                onRegisterClick = { navController.navigate(Screen.SignUp.route) }
+                onRegisterClick = {
+                    navController.navigate(Screen.SignUp.route)
+                }
             )
         }
 
-        // SignUp -> FieldDetails-ə keçir
         composable(Screen.SignUp.route) {
             SignUpScreen(
                 onSignUpSuccess = {
                     navController.navigate(Screen.FieldDetails.route)
                 },
-                onBackToLogin = { navController.popBackStack() }
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
             )
         }
 
-        // FieldDetails -> Main-ə keçir və qeydiyyat prosesini yığından silir
         composable(Screen.FieldDetails.route) {
             FieldDetailsScreen(
                 onCompleteClick = {
@@ -73,7 +91,9 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -83,26 +103,48 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
 
         composable(Screen.Profile.route) {
             ProfileScreen(
-                onAppearanceClick = { navController.navigate(Screen.Appearance.route) }
+                onAccountSettingsClick = {
+                    navController.navigate(Screen.AccountSettings.route)
+                },
+                onAppearanceClick = {
+                    navController.navigate(Screen.Appearance.route)
+                }
+            )
+        }
+
+        composable(Screen.AccountSettings.route) {
+            AccountSettingsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
             )
         }
 
         composable(Screen.Appearance.route) {
-            AppearanceScreen(onBackClick = { navController.popBackStack() })
+            AppearanceScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(Screen.AIAssistant.route) {
             AIAssistantScreen(
                 mainPadding = PaddingValues(0.dp),
-                onBackClick = { navController.popBackStack() }
+                onBackClick = {
+                    navController.popBackStack()
+                }
             )
         }
 
         composable(Screen.Weather.route) {
-            WeatherScreen(onBackClick = { navController.popBackStack() })
+            WeatherScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
-        // Digər boş marşrutlar
         composable(Screen.Home.route) { }
         composable(Screen.Irrigation.route) { }
         composable(Screen.CropGuide.route) { }

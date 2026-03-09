@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onAppearanceClick: () -> Unit) {
+fun ProfileScreen(
+    onAppearanceClick: () -> Unit,
+    onAccountSettingsClick: () -> Unit
+) {
     val primaryGreen = Color(0xFF2E7D32)
     val lightGreen = Color(0xFF4CAF50)
     val scrollState = rememberScrollState()
@@ -87,7 +90,7 @@ fun ProfileScreen(onAppearanceClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsSection(onAppearanceClick = onAppearanceClick)
+            SettingsSection(onAppearanceClick = onAppearanceClick,onAccountSettingsClick = onAccountSettingsClick)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -291,7 +294,10 @@ fun ContactInfoRow(icon: ImageVector, text: String) {
 }
 
 @Composable
-fun SettingsSection(onAppearanceClick: () -> Unit) {
+fun SettingsSection(
+    onAppearanceClick: () -> Unit,
+    onAccountSettingsClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -309,8 +315,15 @@ fun SettingsSection(onAppearanceClick: () -> Unit) {
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
 
-            SettingItem(Icons.Outlined.Settings, "Account Settings", onClick = { /* TODO */ })
-            SettingItem(Icons.Outlined.Notifications, "Notifications", onClick = { /* TODO */ })
+            SettingItem(
+                icon = Icons.Outlined.Settings,
+                title = "Account Settings",
+                onClick = onAccountSettingsClick
+            )
+            SettingItem(
+                Icons.Outlined.Notifications,
+                "Notifications",
+                onClick = { /* TODO */ })
             SettingItem(
                 icon = Icons.Outlined.DarkMode,
                 title = "Appearance",
