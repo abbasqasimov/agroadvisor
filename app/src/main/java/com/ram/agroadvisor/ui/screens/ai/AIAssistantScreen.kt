@@ -110,7 +110,6 @@ fun AIAssistantScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        // SƏNİN DEDİYİN DƏYİŞİKLİK: bottom = 28.dp əlavə edildi
                         .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 28.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

@@ -26,7 +26,6 @@ fun SignUpScreen(
     val primaryGreen = Color(0xFF4CAF50)
     val scrollState = rememberScrollState()
 
-    // State-lər: Ad, Telefon, Email və Şifrə
     var fullName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -42,7 +41,6 @@ fun SignUpScreen(
     ) {
         Spacer(modifier = Modifier.height(60.dp))
 
-        // Başlıq hissəsi
         Text(
             text = "Create Account",
             color = primaryGreen,
@@ -58,7 +56,6 @@ fun SignUpScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // 1. Ad Soyad
         CustomOutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
@@ -66,7 +63,6 @@ fun SignUpScreen(
             primaryGreen = primaryGreen
         )
 
-        // 2. Telefon nömrəsi
         CustomOutlinedTextField(
             value = phoneNumber,
             onValueChange = { phoneNumber = it },
@@ -75,7 +71,6 @@ fun SignUpScreen(
             keyboardType = KeyboardType.Phone
         )
 
-        // 3. Email
         CustomOutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -84,7 +79,6 @@ fun SignUpScreen(
             keyboardType = KeyboardType.Email
         )
 
-        // 4. Şifrə
         CustomOutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -95,7 +89,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Növbəti mərhələyə keçid düyməsi
         Button(
             onClick = { onSignUpSuccess() },
             modifier = Modifier
@@ -114,7 +107,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Girişə qayıtmaq üçün link
         TextButton(onClick = { onBackToLogin() }) {
             Text(
                 text = "Already have an account? Log in",
@@ -127,10 +119,6 @@ fun SignUpScreen(
     }
 }
 
-/**
- * Təkrarçılığın qarşısını almaq üçün xüsusi TextField komponenti.
- * Bu funksiyanı eyni faylda saxla ki, SignUpScreen onu tapa bilsin.
- */
 @Composable
 fun CustomOutlinedTextField(
     value: String,

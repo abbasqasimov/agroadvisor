@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 fun AISection(
     onStartChatClick: () -> Unit
 ) {
-    // Modern gradient background with green tones
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(Color(0xFF2E7D32), Color(0xFF1B5E20))
     )
@@ -36,7 +35,6 @@ fun AISection(
             .fillMaxSize()
             .background(gradientBrush)
     ) {
-        // Decorative light circle in the background
         Box(
             modifier = Modifier
                 .size(250.dp)
@@ -52,7 +50,6 @@ fun AISection(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Header Icon
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -70,7 +67,6 @@ fun AISection(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Text content
             Text(
                 text = "Agro AI Assistant",
                 fontSize = 30.sp,
@@ -90,14 +86,12 @@ fun AISection(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Features list
             FeatureItem(icon = Icons.Default.TipsAndUpdates, label = "Smart Suggestions")
             FeatureItem(icon = Icons.Default.Spa, label = "Crop Health Analysis")
             FeatureItem(icon = Icons.Default.AutoAwesome, label = "Fast Q&A Support")
 
             Spacer(modifier = Modifier.height(56.dp))
 
-            // Start Button
             Button(
                 onClick = onStartChatClick,
                 modifier = Modifier

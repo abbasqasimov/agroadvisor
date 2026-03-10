@@ -73,9 +73,6 @@ fun MainScreen(navController: NavController? = null) {
             }
         }
     ) { paddingValues ->
-        // Yuxarıdakı xarab olma problemini həll edən hissə:
-        // Əgər ekranın öz TopAppBar-ı varsa, calculateTopPadding() istifadə etməməliyik.
-        // bottomBar gizlidirsə (AI çatda), bütün padding-ləri sıfırlayırıq.
         val modifier = if (shouldShowBottomBar) {
             Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         } else {

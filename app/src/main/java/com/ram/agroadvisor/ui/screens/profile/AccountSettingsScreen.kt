@@ -54,7 +54,7 @@ fun AccountSettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundColor) // Arxa plan açıq boz
+                .background(backgroundColor)
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -91,18 +91,18 @@ fun SettingsItem(
     isDanger: Boolean = false
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp), // Profile-dakı kartlarla eyni radius
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White // Kartların daxili ağ oldu
+            containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Tıklanma funksiyası */ }
+            .clickable { }
     ) {
         Row(
             modifier = Modifier
-                .padding(20.dp) // Daha geniş və rahat toxunuş sahəsi
+                .padding(20.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -115,7 +115,7 @@ fun SettingsItem(
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = title,
-                fontSize = 15.sp, // ProfileScreen-dəki SettingItem ölçüsü ilə eyni
+                fontSize = 15.sp,
                 fontWeight = if (isDanger) FontWeight.SemiBold else FontWeight.Medium,
                 color = if (isDanger) Color.Red else Color.Black
             )

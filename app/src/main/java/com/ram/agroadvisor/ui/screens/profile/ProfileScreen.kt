@@ -68,7 +68,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Stats Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

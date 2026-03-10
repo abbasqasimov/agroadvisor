@@ -79,7 +79,6 @@ fun HomeScreen(navController: NavController? = null) {
                 bottom = paddingValues.calculateBottomPadding() + 16.dp
             )
         ) {
-            // Weather Card
             item {
                 WeatherCard(
                     temperature = "28°C",
@@ -90,31 +89,26 @@ fun HomeScreen(navController: NavController? = null) {
                 )
             }
 
-            // Feature Cards Grid
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 FeatureGrid(navController)
             }
 
-            // Today's Tips Section
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 TodaysTipsSection()
             }
 
-            // Crop Calendar Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 CropCalendarSection()
             }
 
-            // Featured Article Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 FeaturedArticleSection()
             }
 
-            // Son boşluq
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }

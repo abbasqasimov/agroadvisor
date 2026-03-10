@@ -38,7 +38,6 @@ fun WelcomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Başlıq
             Text(
                 text = "Welcome",
                 fontSize = 32.sp,
@@ -48,7 +47,6 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Alt başlıq / təsvir
             Text(
                 text = "Welcome to the AgroAdvisor app. Please log in or create a new account to continue.",
                 fontSize = 16.sp,
@@ -58,7 +56,6 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Giriş et düyməsi
             Button(
                 onClick = onLoginClick,
                 modifier = Modifier
