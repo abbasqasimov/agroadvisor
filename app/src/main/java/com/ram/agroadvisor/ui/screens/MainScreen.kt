@@ -1,5 +1,6 @@
 package com.ram.agroadvisor.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,8 +16,11 @@ import androidx.navigation.NavController
 import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.ai.AISection
 import com.ram.agroadvisor.ui.screens.home.HomeScreen
+import com.ram.agroadvisor.ui.screens.plus.PlusScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
+import com.ram.agroadvisor.ui.screens.resources.ResourcesScreen
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreen(navController: NavController? = null) {
     var selectedItem by remember { mutableIntStateOf(0) }
@@ -57,7 +61,6 @@ fun MainScreen(navController: NavController? = null) {
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
-                                // Əgər başqa tab-a keçiriksə, AI çatını sıfırlayırıq ki, geri qayıdanda intro görünsün
                                 if (index != 3) isChatActive = false
                             },
                             colors = NavigationBarItemDefaults.colors(
@@ -72,39 +75,31 @@ fun MainScreen(navController: NavController? = null) {
                 }
             }
         }
-    ) { paddingValues ->
-        val modifier = if (shouldShowBottomBar) {
-            Modifier.padding(bottom = paddingValues.calculateBottomPadding())
-        } else {
-            Modifier.fillMaxSize()
-        }
-
-        Box(modifier = modifier) {
-            when (selectedItem) {
-                0 -> HomeScreen(navController)
-                1 -> PlaceholderScreen("Resources")
-                2 -> PlaceholderScreen("Plus")
-                3 -> {
-                    if (isChatActive) {
-                        AIAssistantScreen(
-                            mainPadding = PaddingValues(0.dp),
-                            onBackClick = { isChatActive = false }
-                        )
-                    } else {
-                        AISection(
-                            onStartChatClick = { isChatActive = true }
-                        )
-                    }
+    ) { _ ->
+        when (selectedItem) {
+            0 -> HomeScreen(navController)
+            1 -> ResourcesScreen()
+            2 -> PlusScreen()
+            3 -> {
+                if (isChatActive) {
+                    AIAssistantScreen(
+                        mainPadding = PaddingValues(0.dp),
+                        onBackClick = { isChatActive = false }
+                    )
+                } else {
+                    AISection(
+                        onStartChatClick = { isChatActive = true }
+                    )
                 }
-                4 -> ProfileScreen(
-                    onAccountSettingsClick = {
-                        navController?.navigate("account_settings_screen")
-                    },
-                    onAppearanceClick = {
-                        navController?.navigate("appearance_screen")
-                    }
-                )
             }
+            4 -> ProfileScreen(
+                onAccountSettingsClick = {
+                    navController?.navigate("account_settings_screen")
+                },
+                onAppearanceClick = {
+                    navController?.navigate("appearance_screen")
+                }
+            )
         }
     }
 }

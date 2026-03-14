@@ -1,8 +1,10 @@
 package com.ram.agroadvisor.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -15,48 +17,43 @@ import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
 import com.ram.agroadvisor.ui.screens.profile.AccountSettingsScreen
 
 sealed class Screen(val route: String) {
-
-    object Welcome : Screen("welcome")
-    object Login : Screen("login")
-    object SignUp : Screen("signup")
-    object FieldDetails : Screen("field_details")
-
-    object Main : Screen("main")
-
-    object Home : Screen("home")
-    object Weather : Screen("weather")
-
-    object AIAssistant : Screen("ai_assistant")
-
-    object Irrigation : Screen("irrigation")
-    object CropGuide : Screen("crop_guide")
-    object MarketPrice : Screen("market_price")
-
-    object Profile : Screen("profile")
-
-    object Appearance : Screen("appearance_screen")
-
-    object AccountSettings : Screen("account_settings_screen") // əlavə edildi
+    data object Welcome : Screen("welcome")
+    data object Login : Screen("login")
+    data object SignUp : Screen("signup")
+    data object FieldDetails : Screen("field_details")
+    data object Main : Screen("main")
+    data object Home : Screen("home")
+    data object Weather : Screen("weather")
+    data object AIAssistant : Screen("ai_assistant")
+    data object Irrigation : Screen("irrigation")
+    data object CropGuide : Screen("crop_guide")
+    data object MarketPrice : Screen("market_price")
+    data object Profile : Screen("profile")
+    data object Appearance : Screen("appearance_screen")
+    data object AccountSettings : Screen("account_settings_screen")
 }
 
 @Composable
 fun NavGraph(startDestination: String = Screen.Welcome.route) {
-
     val navController = rememberNavController()
+
+    // Köməkçi funksiya: Alt ekranlardan Home-a (Main) qayıtmaq üçün
+    val navigateToMain = {
+        navController.navigate(Screen.Main.route) {
+            // Main-ə qayıdanda arxadakı bütün yolu təmizləyirik
+            popUpTo(Screen.Main.route) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
 
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-
         composable(Screen.Welcome.route) {
             WelcomeScreen(
-                onLoginClick = {
-                    navController.navigate(Screen.Login.route)
-                },
-                onRegisterClick = {
-                    navController.navigate(Screen.SignUp.route)
-                }
+                onLoginClick = { navController.navigate(Screen.Login.route) },
+                onRegisterClick = { navController.navigate(Screen.SignUp.route) }
             )
         }
 
@@ -64,23 +61,18 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Main.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        // Əsas nöqtə: Login-dən sonra Welcome-u yığından tam silirik
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
-                onRegisterClick = {
-                    navController.navigate(Screen.SignUp.route)
-                }
+                onRegisterClick = { navController.navigate(Screen.SignUp.route) }
             )
         }
 
         composable(Screen.SignUp.route) {
             SignUpScreen(
-                onSignUpSuccess = {
-                    navController.navigate(Screen.FieldDetails.route)
-                },
-                onBackToLogin = {
-                    navController.popBackStack()
-                }
+                onSignUpSuccess = { navController.navigate(Screen.FieldDetails.route) },
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 
@@ -88,12 +80,11 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
             FieldDetailsScreen(
                 onCompleteClick = {
                     navController.navigate(Screen.Main.route) {
+                        // Qeydiyyat bitəndə Welcome-u tam silirik
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -101,48 +92,37 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
             MainScreen(navController = navController)
         }
 
+        // --- Alt Ekranlar (BackHandler əlavə edildi) ---
+
         composable(Screen.Profile.route) {
+            BackHandler { navigateToMain() }
             ProfileScreen(
-                onAccountSettingsClick = {
-                    navController.navigate(Screen.AccountSettings.route)
-                },
-                onAppearanceClick = {
-                    navController.navigate(Screen.Appearance.route)
-                }
+                onAccountSettingsClick = { navController.navigate(Screen.AccountSettings.route) },
+                onAppearanceClick = { navController.navigate(Screen.Appearance.route) }
             )
         }
 
         composable(Screen.AccountSettings.route) {
-            AccountSettingsScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
+            BackHandler { navigateToMain() }
+            AccountSettingsScreen(onBackClick = { navigateToMain() })
         }
 
         composable(Screen.Appearance.route) {
-            AppearanceScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
+            BackHandler { navigateToMain() }
+            AppearanceScreen(onBackClick = { navigateToMain() })
         }
 
         composable(Screen.AIAssistant.route) {
+            BackHandler { navigateToMain() }
             AIAssistantScreen(
                 mainPadding = PaddingValues(0.dp),
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                onBackClick = { navigateToMain() }
             )
         }
 
         composable(Screen.Weather.route) {
-            WeatherScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
+            BackHandler { navigateToMain() }
+            WeatherScreen(onBackClick = { navigateToMain() })
         }
 
         composable(Screen.Home.route) { }
