@@ -7,9 +7,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -41,7 +39,7 @@ fun MainScreen(navController: NavController? = null) {
         bottomBar = {
             if (shouldShowBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     items.forEachIndexed { index, item ->
@@ -64,11 +62,11 @@ fun MainScreen(navController: NavController? = null) {
                                 if (index != 3) isChatActive = false
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Color(0xFF4CAF50),
-                                selectedTextColor = Color(0xFF4CAF50),
-                                indicatorColor = Color(0xFFE8F5E9),
-                                unselectedIconColor = Color.Gray,
-                                unselectedTextColor = Color.Gray
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }
@@ -110,15 +108,3 @@ data class BottomNavItem(
     val selectedIcon: ImageVector
 )
 
-@Composable
-fun PlaceholderScreen(name: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "$name Screen",
-            style = MaterialTheme.typography.headlineMedium
-        )
-    }
-}

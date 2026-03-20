@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,33 +69,36 @@ fun AIAssistantScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF5F5F5),
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.White),
+                            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface),
                             contentAlignment = Alignment.Center
                         ) { Text("🤖", fontSize = 24.sp) }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text("AI Assistant", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF4CAF50)))
+                                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Online", fontSize = 12.sp, color = Color.White.copy(0.7f))
+                                Text("Online", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimary.copy(0.7f))
                             }
                         }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF2E7D32), titleContentColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         },
         bottomBar = {
@@ -105,7 +107,7 @@ fun AIAssistantScreen(
                     .fillMaxWidth()
                     .imePadding(),
                 shadowElevation = 8.dp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
@@ -117,12 +119,12 @@ fun AIAssistantScreen(
                         value = messageText,
                         onValueChange = { messageText = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Ask me everything...", color = Color.Gray) },
+                        placeholder = { Text("Ask me everything...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF5F5F5),
-                            unfocusedContainerColor = Color(0xFFF5F5F5),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f)
                         ),
                         shape = RoundedCornerShape(24.dp),
                         singleLine = true
@@ -130,11 +132,11 @@ fun AIAssistantScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     FloatingActionButton(
                         onClick = { handleSend(messageText) },
-                        containerColor = Color(0xFF4CAF50),
+                        containerColor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(48.dp),
                         shape = CircleShape
                     ) {
-                        Icon(Icons.Default.Send, contentDescription = "Send", tint = Color.White)
+                        Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -154,7 +156,7 @@ fun AIAssistantScreen(
 
             item {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
-                    Text("✨ Suggested questions", fontSize = 14.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                    Text("✨ Suggested questions", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(12.dp))
                     suggestedQuestions.forEach { question ->
                         SuggestedQuestionChip(question) { handleSend(question) }
@@ -173,7 +175,7 @@ fun MessageBubble(message: String, time: String, isAI: Boolean) {
         horizontalArrangement = if (isAI) Arrangement.Start else Arrangement.End
     ) {
         if (isAI) {
-            Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFF4CAF50)), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) {
                 Text("🤖", fontSize = 18.sp)
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -182,12 +184,12 @@ fun MessageBubble(message: String, time: String, isAI: Boolean) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(topStart = if (isAI) 4.dp else 16.dp, topEnd = if (isAI) 16.dp else 4.dp, bottomStart = 16.dp, bottomEnd = 16.dp))
-                    .background(if (isAI) Color.White else Color(0xFF4CAF50))
+                    .background(if (isAI) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary)
                     .padding(12.dp)
             ) {
-                Text(text = message, fontSize = 14.sp, color = if (isAI) Color.Black else Color.White)
+                Text(text = message, fontSize = 14.sp, color = if (isAI) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary)
             }
-            Text(text = time, fontSize = 11.sp, color = Color.Gray, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+            Text(text = time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
         }
     }
 }
@@ -197,10 +199,10 @@ fun SuggestedQuestionChip(question: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Text(text = question, fontSize = 14.sp, color = Color.Black, modifier = Modifier.padding(16.dp))
+        Text(text = question, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(16.dp))
     }
 }
 

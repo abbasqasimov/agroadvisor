@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,10 +20,6 @@ import androidx.compose.ui.unit.sp
 fun AccountSettingsScreen(
     onBackClick: () -> Unit
 ) {
-    val primaryGreen = Color(0xFF2E7D32)
-    // ProfileScreen-dəki arxa plan rəngi ilə eyni
-    val backgroundColor = Color(0xFFF5F5F5)
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -33,7 +28,7 @@ fun AccountSettingsScreen(
                         "Account Settings",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 navigationIcon = {
@@ -41,12 +36,12 @@ fun AccountSettingsScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = primaryGreen
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -54,30 +49,29 @@ fun AccountSettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundColor)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsItem(icon = Icons.Default.Person, title = "Edit Profile", iconColor = primaryGreen)
-            SettingsItem(icon = Icons.Default.Lock, title = "Change Password", iconColor = primaryGreen)
-            SettingsItem(icon = Icons.Default.Security, title = "Two-Factor Authentication", iconColor = primaryGreen)
-            SettingsItem(icon = Icons.Default.PrivacyTip, title = "Privacy Settings", iconColor = primaryGreen)
-            SettingsItem(icon = Icons.Default.Storage, title = "Data & Storage", iconColor = primaryGreen)
+            SettingsItem(icon = Icons.Default.Person, title = "Edit Profile")
+            SettingsItem(icon = Icons.Default.Lock, title = "Change Password")
+            SettingsItem(icon = Icons.Default.Security, title = "Two-Factor Authentication")
+            SettingsItem(icon = Icons.Default.PrivacyTip, title = "Privacy Settings")
+            SettingsItem(icon = Icons.Default.Storage, title = "Data & Storage")
 
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 4.dp),
                 thickness = 1.dp,
-                color = Color.LightGray.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.outlineVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             SettingsItem(
                 icon = Icons.Default.Delete,
                 title = "Delete Account",
-                isDanger = true,
-                iconColor = Color.Red
+                isDanger = true
             )
         }
     }
@@ -87,13 +81,12 @@ fun AccountSettingsScreen(
 fun SettingsItem(
     icon: ImageVector,
     title: String,
-    iconColor: Color,
     isDanger: Boolean = false
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
@@ -109,7 +102,7 @@ fun SettingsItem(
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = iconColor,
+                tint = if (isDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -117,13 +110,13 @@ fun SettingsItem(
                 text = title,
                 fontSize = 15.sp,
                 fontWeight = if (isDanger) FontWeight.SemiBold else FontWeight.Medium,
-                color = if (isDanger) Color.Red else Color.Black
+                color = if (isDanger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color.Gray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

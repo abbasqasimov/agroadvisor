@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -23,7 +22,6 @@ fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onBackToLogin: () -> Unit = {}
 ) {
-    val primaryGreen = Color(0xFF4CAF50)
     val scrollState = rememberScrollState()
 
     var fullName by remember { mutableStateOf("") }
@@ -34,7 +32,7 @@ fun SignUpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -43,7 +41,7 @@ fun SignUpScreen(
 
         Text(
             text = "Create Account",
-            color = primaryGreen,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -51,7 +49,7 @@ fun SignUpScreen(
 
         Text(
             text = "Fill in your details to get started",
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -59,15 +57,13 @@ fun SignUpScreen(
         CustomOutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
-            label = "Full Name",
-            primaryGreen = primaryGreen
+            label = "Full Name"
         )
 
         CustomOutlinedTextField(
             value = phoneNumber,
             onValueChange = { phoneNumber = it },
             label = "Phone Number",
-            primaryGreen = primaryGreen,
             keyboardType = KeyboardType.Phone
         )
 
@@ -75,7 +71,6 @@ fun SignUpScreen(
             value = email,
             onValueChange = { email = it },
             label = "Email Address",
-            primaryGreen = primaryGreen,
             keyboardType = KeyboardType.Email
         )
 
@@ -83,7 +78,6 @@ fun SignUpScreen(
             value = password,
             onValueChange = { password = it },
             label = "Password",
-            primaryGreen = primaryGreen,
             isPassword = true
         )
 
@@ -95,13 +89,13 @@ fun SignUpScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = primaryGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text(
                 text = "Next: Field Details",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
@@ -110,7 +104,7 @@ fun SignUpScreen(
         TextButton(onClick = { onBackToLogin() }) {
             Text(
                 text = "Already have an account? Log in",
-                color = primaryGreen,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -124,7 +118,6 @@ fun CustomOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    primaryGreen: Color,
     keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false
 ) {
@@ -139,10 +132,10 @@ fun CustomOutlinedTextField(
             .fillMaxWidth()
             .padding(bottom = 16.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = primaryGreen,
-            focusedLabelColor = primaryGreen,
-            cursorColor = primaryGreen,
-            unfocusedBorderColor = Color.LightGray
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
     )
 }

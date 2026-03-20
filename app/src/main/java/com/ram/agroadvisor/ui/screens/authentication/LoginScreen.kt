@@ -7,7 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -19,28 +18,27 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
 ) {
-    val primaryGreen = Color(0xFF4CAF50)
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Welcome",
-            color = primaryGreen,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
             text = "Enter your email and password to log in to your account.",
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(bottom = 32.dp),
             lineHeight = 20.sp
@@ -53,10 +51,10 @@ fun LoginScreen(
             singleLine = true,
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = primaryGreen,
-                unfocusedBorderColor = Color.Gray,
-                focusedLabelColor = primaryGreen,
-                cursorColor = primaryGreen
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
             )
         )
 
@@ -69,23 +67,23 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = primaryGreen,
-                unfocusedBorderColor = Color.Gray,
-                focusedLabelColor = primaryGreen,
-                cursorColor = primaryGreen
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
             )
         )
 
         Button(
             onClick = { onLoginSuccess() },
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = primaryGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("Login", color = Color.White)
+            Text("Login", color = MaterialTheme.colorScheme.onPrimary)
         }
 
         TextButton(onClick = { onRegisterClick() }) {
-            Text("Don't have an account? Sign Up", color = primaryGreen)
+            Text("Don't have an account? Sign Up", color = MaterialTheme.colorScheme.primary)
         }
     }
 }

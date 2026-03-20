@@ -106,11 +106,11 @@ fun ResourcesScreen() {
                         "Resources",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2E7D32)
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -118,7 +118,7 @@ fun ResourcesScreen() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -137,7 +137,7 @@ fun NewsArticleCard(article: NewsArticle) {
             .fillMaxWidth()
             .clickable { /* TODO: Navigate to article detail */ },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -145,7 +145,6 @@ fun NewsArticleCard(article: NewsArticle) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Image placeholder
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -170,7 +169,6 @@ fun NewsArticleCard(article: NewsArticle) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    // Category badge
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = article.imageColor.copy(alpha = 0.1f)
@@ -186,23 +184,21 @@ fun NewsArticleCard(article: NewsArticle) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Title
                     Text(
                         text = article.title,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = 20.sp,
                         maxLines = 2
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Description
                     Text(
                         text = article.description,
                         fontSize = 13.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp,
                         maxLines = 2
                     )
@@ -210,7 +206,6 @@ fun NewsArticleCard(article: NewsArticle) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Date and arrow
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -220,21 +215,21 @@ fun NewsArticleCard(article: NewsArticle) {
                         Icon(
                             Icons.Default.CalendarToday,
                             contentDescription = null,
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = article.date,
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     Icon(
                         Icons.Default.ChevronRight,
                         contentDescription = "Read more",
-                        tint = Color(0xFF4CAF50),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                 }

@@ -15,6 +15,7 @@ import com.ram.agroadvisor.ui.screens.home.WeatherScreen
 import com.ram.agroadvisor.ui.screens.profile.AppearanceScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
 import com.ram.agroadvisor.ui.screens.profile.AccountSettingsScreen
+import com.ram.agroadvisor.ui.theme.ThemeMode
 
 sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
@@ -34,7 +35,11 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun NavGraph(startDestination: String = Screen.Welcome.route) {
+fun NavGraph(
+    startDestination: String = Screen.Welcome.route,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeChange: (ThemeMode) -> Unit = {}
+) {
     val navController = rememberNavController()
 
     // Köməkçi funksiya: Alt ekranlardan Home-a (Main) qayıtmaq üçün
@@ -109,7 +114,11 @@ fun NavGraph(startDestination: String = Screen.Welcome.route) {
 
         composable(Screen.Appearance.route) {
             BackHandler { navigateToMain() }
-            AppearanceScreen(onBackClick = { navigateToMain() })
+            AppearanceScreen(
+                themeMode = themeMode,
+                onThemeChange = onThemeChange,
+                onBackClick = { navigateToMain() }
+            )
         }
 
         composable(Screen.AIAssistant.route) {

@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,9 +23,6 @@ import com.ram.agroadvisor.ui.navigation.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController? = null) {
-    val primaryGreen = Color(0xFF2E7D32)
-    val lightGreen = Color(0xFF4CAF50)
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,12 +32,12 @@ fun HomeScreen(navController: NavController? = null) {
                             "AgroAdvisor",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                         Text(
                             "Your Smart Farming Assistant",
                             fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                         )
                     }
                 },
@@ -50,8 +46,8 @@ fun HomeScreen(navController: NavController? = null) {
                         modifier = Modifier.padding(end = 16.dp),
                         badge = {
                             Badge(
-                                containerColor = Color.Red,
-                                contentColor = Color.White
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
                             ) {
                                 Text("3")
                             }
@@ -60,12 +56,12 @@ fun HomeScreen(navController: NavController? = null) {
                         Icon(
                             Icons.Default.Notifications,
                             contentDescription = "Notifications",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = primaryGreen
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -73,7 +69,7 @@ fun HomeScreen(navController: NavController? = null) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(
                 top = paddingValues.calculateTopPadding(),
                 bottom = paddingValues.calculateBottomPadding() + 16.dp
@@ -84,7 +80,6 @@ fun HomeScreen(navController: NavController? = null) {
                     temperature = "28°C",
                     description = "Sunny, Low Humidity",
                     recommendation = "Today\nGood for spraying",
-                    backgroundColor = lightGreen,
                     onClick = { navController?.navigate(Screen.Weather.route) }
                 )
             }
@@ -122,7 +117,6 @@ fun WeatherCard(
     temperature: String,
     description: String,
     recommendation: String,
-    backgroundColor: Color,
     onClick: () -> Unit
 ) {
     Card(
@@ -130,7 +124,7 @@ fun WeatherCard(
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         onClick = onClick
     ) {
@@ -146,7 +140,7 @@ fun WeatherCard(
                     Icons.Default.LightMode,
                     contentDescription = "Weather",
                     modifier = Modifier.size(48.dp),
-                    tint = Color(0xFFFFEB3B)
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
@@ -154,12 +148,12 @@ fun WeatherCard(
                         temperature,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         description,
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
                     )
                 }
             }
@@ -168,7 +162,7 @@ fun WeatherCard(
                 Text(
                     recommendation,
                     fontSize = 14.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     lineHeight = 18.sp
                 )
             }
@@ -186,16 +180,12 @@ fun FeatureGrid(navController: NavController? = null) {
             FeatureCard(
                 icon = Icons.Default.Chat,
                 title = "AI Assistant",
-                backgroundColor = Color(0xFFE8F5E9),
-                iconColor = Color(0xFF4CAF50),
                 modifier = Modifier.weight(1f),
                 onClick = { navController?.navigate(Screen.AIAssistant.route) }
             )
             FeatureCard(
                 icon = Icons.Default.WaterDrop,
                 title = "Irrigation",
-                backgroundColor = Color(0xFFE3F2FD),
-                iconColor = Color(0xFF2196F3),
                 modifier = Modifier.weight(1f),
                 onClick = { navController?.navigate(Screen.Irrigation.route) }
             )
@@ -210,16 +200,12 @@ fun FeatureGrid(navController: NavController? = null) {
             FeatureCard(
                 icon = Icons.Default.Eco,
                 title = "Crop Guide",
-                backgroundColor = Color(0xFFFFF9C4),
-                iconColor = Color(0xFFFBC02D),
                 modifier = Modifier.weight(1f),
                 onClick = { navController?.navigate(Screen.CropGuide.route) }
             )
             FeatureCard(
                 icon = Icons.Default.TrendingUp,
                 title = "Market Price",
-                backgroundColor = Color(0xFFF3E5F5),
-                iconColor = Color(0xFF9C27B0),
                 modifier = Modifier.weight(1f),
                 onClick = { navController?.navigate(Screen.MarketPrice.route) }
             )
@@ -232,15 +218,13 @@ fun FeatureGrid(navController: NavController? = null) {
 fun FeatureCard(
     icon: ImageVector,
     title: String,
-    backgroundColor: Color,
-    iconColor: Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier.height(120.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         onClick = onClick
     ) {
@@ -255,14 +239,14 @@ fun FeatureCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(backgroundColor),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = title,
                     modifier = Modifier.size(28.dp),
-                    tint = iconColor
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -270,7 +254,7 @@ fun FeatureCard(
                 title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -288,10 +272,10 @@ fun TodaysTipsSection() {
                 "Today's Tips",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
             TextButton(onClick = { /* TODO */ }) {
-                Text("See All", color = Color(0xFF4CAF50))
+                Text("See All", color = MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -300,8 +284,7 @@ fun TodaysTipsSection() {
         TipCard(
             icon = Icons.Default.WaterDrop,
             title = "Optimal Irrigation Time",
-            description = "Best time to water your crops is early morning (5-7 AM) to minimize water loss from evaporation.",
-            iconBackgroundColor = Color(0xFF4CAF50)
+            description = "Best time to water your crops is early morning (5-7 AM) to minimize water loss from evaporation."
         )
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -311,13 +294,12 @@ fun TodaysTipsSection() {
 fun TipCard(
     icon: ImageVector,
     title: String,
-    description: String,
-    iconBackgroundColor: Color
+    description: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Row(
             modifier = Modifier
@@ -328,16 +310,16 @@ fun TipCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(iconBackgroundColor),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSecondaryContainer)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(description, fontSize = 14.sp, color = Color.Black.copy(alpha = 0.7f), lineHeight = 20.sp)
+                Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f), lineHeight = 20.sp)
             }
         }
     }
@@ -351,15 +333,15 @@ fun CropCalendarSection() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Crop Calendar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Crop Calendar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             IconButton(onClick = { /* TODO */ }) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Calendar", tint = Color.Gray)
+                Icon(Icons.Default.CalendarToday, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
-        CropCalendarCard(cropName = "Wheat", description = "Harvest in 15 days", iconBackgroundColor = Color(0xFFFFF9C4))
+        CropCalendarCard(cropName = "Wheat", description = "Harvest in 15 days")
         Spacer(modifier = Modifier.height(12.dp))
-        CropCalendarCard(cropName = "Tomatoes", description = "Fertilize today", iconBackgroundColor = Color(0xFFE8F5E9), icon = Icons.Default.LocalFlorist)
+        CropCalendarCard(cropName = "Tomatoes", description = "Fertilize today", icon = Icons.Default.LocalFlorist)
     }
 }
 
@@ -367,13 +349,12 @@ fun CropCalendarSection() {
 fun CropCalendarCard(
     cropName: String,
     description: String,
-    iconBackgroundColor: Color,
     icon: ImageVector = Icons.Default.Eco
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -386,18 +367,18 @@ fun CropCalendarCard(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(iconBackgroundColor),
+                    .background(MaterialTheme.colorScheme.tertiaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(32.dp))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(32.dp))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(cropName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                Text(cropName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(description, fontSize = 14.sp, color = Color.Gray)
+                Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Icon(Icons.Default.ChevronRight, contentDescription = "Details", tint = Color.Gray)
+            Icon(Icons.Default.ChevronRight, contentDescription = "Details", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -405,7 +386,7 @@ fun CropCalendarCard(
 @Composable
 fun FeaturedArticleSection() {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text("Featured Article", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+        Text("Featured Article", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(12.dp))
         FeaturedArticleCard(
             title = "Smart Farming Technology in 2026",
@@ -420,23 +401,23 @@ fun FeaturedArticleCard(title: String, description: String, readMoreText: String
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(Color(0xFF81C784)))
+            Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(MaterialTheme.colorScheme.primaryContainer))
             Column(modifier = Modifier.padding(20.dp)) {
-                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 28.sp)
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 28.sp)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(description, fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
+                Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { /* TODO */ }
                 ) {
-                    Text(readMoreText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4CAF50))
+                    Text(readMoreText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                 }
             }
         }

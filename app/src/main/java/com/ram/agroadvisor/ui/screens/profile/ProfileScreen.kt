@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,8 +27,6 @@ fun ProfileScreen(
     onAppearanceClick: () -> Unit,
     onAccountSettingsClick: () -> Unit
 ) {
-    val primaryGreen = Color(0xFF2E7D32)
-    val lightGreen = Color(0xFF4CAF50)
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -40,17 +37,17 @@ fun ProfileScreen(
                         "Profile",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = primaryGreen)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(scrollState)
                 .padding(
                     top = paddingValues.calculateTopPadding(),
@@ -62,8 +59,7 @@ fun ProfileScreen(
             ProfileHeaderCard(
                 name = "Rajesh Kumar",
                 location = "Ludhiana, Punjab",
-                membershipType = "Premium Member",
-                backgroundColor = lightGreen
+                membershipType = "Premium Member"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -74,9 +70,9 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(Icons.Default.Agriculture, "25", "Acres", Color(0xFFE8F5E9), Color(0xFF4CAF50), Modifier.weight(1f))
-                StatCard(Icons.Default.Eco, "4", "Crops", Color(0xFFFFF9C4), Color(0xFFFBC02D), Modifier.weight(1f))
-                StatCard(Icons.Default.Person, "2", "Years", Color(0xFFE3F2FD), Color(0xFF2196F3), Modifier.weight(1f))
+                StatCard(Icons.Default.Agriculture, "25", "Acres", Modifier.weight(1f))
+                StatCard(Icons.Default.Eco, "4", "Crops", Modifier.weight(1f))
+                StatCard(Icons.Default.Person, "2", "Years", Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -89,7 +85,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsSection(onAppearanceClick = onAppearanceClick,onAccountSettingsClick = onAccountSettingsClick)
+            SettingsSection(onAppearanceClick = onAppearanceClick, onAccountSettingsClick = onAccountSettingsClick)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,7 +100,7 @@ fun ProfileScreen(
             Text(
                 "AgroAdvisor v1.0.0",
                 fontSize = 13.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
@@ -117,13 +113,13 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileHeaderCard(name: String, location: String, membershipType: String, backgroundColor: Color) {
+fun ProfileHeaderCard(name: String, location: String, membershipType: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Row(
             modifier = Modifier
@@ -136,14 +132,14 @@ fun ProfileHeaderCard(name: String, location: String, membershipType: String, ba
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.3f)),
+                        .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Box(
@@ -151,14 +147,14 @@ fun ProfileHeaderCard(name: String, location: String, membershipType: String, ba
                         .size(28.dp)
                         .align(Alignment.BottomEnd)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color(0xFF4CAF50)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -168,26 +164,26 @@ fun ProfileHeaderCard(name: String, location: String, membershipType: String, ba
                     name,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color.White.copy(alpha = 0.9f)
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
                     )
                     Text(
                         location,
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
                     )
                 }
                 Text(
                     membershipType,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -199,14 +195,12 @@ fun StatCard(
     icon: ImageVector,
     value: String,
     label: String,
-    iconBackgroundColor: Color,
-    iconColor: Color,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -219,26 +213,26 @@ fun StatCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(iconBackgroundColor),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = null,
                     modifier = Modifier.size(28.dp),
-                    tint = iconColor
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
             Text(
                 value,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = iconColor
+                color = MaterialTheme.colorScheme.primary
             )
             Text(
                 label,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -251,7 +245,7 @@ fun ContactInformationCard(phone: String, email: String, address: String) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -262,7 +256,8 @@ fun ContactInformationCard(phone: String, email: String, address: String) {
             Text(
                 "Contact Information",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(20.dp))
             ContactInfoRow(Icons.Default.Phone, phone)
@@ -281,13 +276,13 @@ fun ContactInfoRow(icon: ImageVector, text: String) {
             icon,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = Color.Gray
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text,
             fontSize = 15.sp,
-            color = Color.Black.copy(alpha = 0.8f)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 }
@@ -302,7 +297,7 @@ fun SettingsSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -310,7 +305,7 @@ fun SettingsSection(
                 "Settings",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
 
@@ -357,26 +352,26 @@ fun SettingItem(
                 icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = Color.Black.copy(alpha = 0.6f)
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 title,
                 fontSize = 15.sp,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = Color.Gray
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                color = Color.LightGray.copy(alpha = 0.3f),
+                color = MaterialTheme.colorScheme.outlineVariant,
                 thickness = 1.dp
             )
         }
@@ -390,7 +385,7 @@ fun SupportSection() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -398,6 +393,7 @@ fun SupportSection() {
                 "Support",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
             SettingItem(Icons.Outlined.HelpOutline, "Help Center", onClick = { })
@@ -418,7 +414,7 @@ fun LogoutButton() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -432,7 +428,7 @@ fun LogoutButton() {
             Icon(
                 Icons.Default.Logout,
                 contentDescription = null,
-                tint = Color.Red,
+                tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -440,7 +436,7 @@ fun LogoutButton() {
                 "Logout",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.Red
+                color = MaterialTheme.colorScheme.error
             )
         }
     }
