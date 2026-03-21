@@ -108,16 +108,16 @@ fun NavGraph(
         }
 
         composable(Screen.AccountSettings.route) {
-            BackHandler { navigateToMain() }
-            AccountSettingsScreen(onBackClick = { navigateToMain() })
+            BackHandler { navController.popBackStack() }
+            AccountSettingsScreen(onBackClick = { navController.popBackStack() })
         }
 
         composable(Screen.Appearance.route) {
-            BackHandler { navigateToMain() }
+            BackHandler { navController.popBackStack() }
             AppearanceScreen(
                 themeMode = themeMode,
                 onThemeChange = onThemeChange,
-                onBackClick = { navigateToMain() }
+                onBackClick = { navController.popBackStack() }
             )
         }
 

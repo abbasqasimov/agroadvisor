@@ -9,12 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -23,6 +24,8 @@ import com.ram.agroadvisor.ui.navigation.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController? = null) {
+    var showNotifications by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -42,22 +45,65 @@ fun HomeScreen(navController: NavController? = null) {
                     }
                 },
                 actions = {
-                    BadgedBox(
-                        modifier = Modifier.padding(end = 16.dp),
-                        badge = {
-                            Badge(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError
+                    Box {
+                        IconButton(onClick = { showNotifications = !showNotifications }) {
+                            BadgedBox(
+                                badge = {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        contentColor = MaterialTheme.colorScheme.onError
+                                    ) {
+                                        Text("3")
+                                    }
+                                }
                             ) {
-                                Text("3")
+                                Icon(
+                                    Icons.Default.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
-                    ) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+
+                        DropdownMenu(
+                            expanded = showNotifications,
+                            onDismissRequest = { showNotifications = false },
+                            modifier = Modifier.width(320.dp)
+                        ) {
+                            Text(
+                                "Notifications",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(16.dp)
+                            )
+
+                            HorizontalDivider()
+
+                            NotificationItem(
+                                icon = Icons.Default.WaterDrop,
+                                title = "Irrigation Reminder",
+                                description = "Time to water your wheat field",
+                                time = "5 min ago",
+                                isUnread = true
+                            )
+
+                            NotificationItem(
+                                icon = Icons.Default.Warning,
+                                title = "Weather Alert",
+                                description = "Heavy rain expected tomorrow",
+                                time = "1 hour ago",
+                                isUnread = true
+                            )
+
+                            NotificationItem(
+                                icon = Icons.Default.TrendingUp,
+                                title = "Market Update",
+                                description = "Wheat prices increased by 5%",
+                                time = "3 hours ago",
+                                isUnread = true
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -422,4 +468,79 @@ fun FeaturedArticleCard(title: String, description: String, readMoreText: String
             }
         }
     }
+}
+
+@Composable
+fun NotificationItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    time: String,
+    isUnread: Boolean = false
+) {
+    DropdownMenuItem(
+        text = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isUnread)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = if (isUnread)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        title,
+                        fontSize = 14.sp,
+                        fontWeight = if (isUnread) FontWeight.SemiBold else FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        description,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                    Text(
+                        time,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
+
+                if (isUnread) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
+        },
+        onClick = { /* TODO: Handle notification click */ }
+    )
 }

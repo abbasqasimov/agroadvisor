@@ -7,10 +7,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.ram.agroadvisor.ui.navigation.Screen
 import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.ai.AISection
 import com.ram.agroadvisor.ui.screens.home.HomeScreen
@@ -92,10 +94,10 @@ fun MainScreen(navController: NavController? = null) {
             }
             4 -> ProfileScreen(
                 onAccountSettingsClick = {
-                    navController?.navigate("account_settings_screen")
+                    navController?.navigate(Screen.AccountSettings.route)
                 },
                 onAppearanceClick = {
-                    navController?.navigate("appearance_screen")
+                    navController?.navigate(Screen.Appearance.route)
                 }
             )
         }
@@ -108,3 +110,15 @@ data class BottomNavItem(
     val selectedIcon: ImageVector
 )
 
+@Composable
+fun PlaceholderScreen(name: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "$name Screen",
+            style = MaterialTheme.typography.headlineMedium
+        )
+    }
+}
