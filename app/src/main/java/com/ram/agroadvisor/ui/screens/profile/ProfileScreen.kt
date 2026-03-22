@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ProfileScreen(
     onAppearanceClick: () -> Unit,
-    onAccountSettingsClick: () -> Unit
+    onAccountSettingsClick: () -> Unit,
+    onHelpCenterClick: () -> Unit,
+    onContactSupportClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -56,6 +58,7 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Profil başlığı (Şəkil və Ad)
             ProfileHeaderCard(
                 name = "Rajesh Kumar",
                 location = "Ludhiana, Punjab",
@@ -64,6 +67,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Statistika Kartları
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,6 +81,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Əlaqə məlumatları
             ContactInformationCard(
                 phone = "+91 98765 43210",
                 email = "rajesh.kumar@email.com",
@@ -85,14 +90,23 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsSection(onAppearanceClick = onAppearanceClick, onAccountSettingsClick = onAccountSettingsClick)
+            // Ayarlar Bölməsi
+            SettingsSection(
+                onAppearanceClick = onAppearanceClick,
+                onAccountSettingsClick = onAccountSettingsClick
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SupportSection()
+            // Dəstək Bölməsi (Help Center və Contact Support bura daxildir)
+            SupportSection(
+                onHelpCenterClick = onHelpCenterClick,
+                onContactSupportClick = onContactSupportClick
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Çıxış düyməsi
             LogoutButton()
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -334,6 +348,42 @@ fun SettingsSection(
 }
 
 @Composable
+fun SupportSection(
+    onHelpCenterClick: () -> Unit,
+    onContactSupportClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            Text(
+                "Support",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+            )
+            SettingItem(
+                icon = Icons.Outlined.HelpOutline,
+                title = "Help Center",
+                onClick = onHelpCenterClick
+            )
+            SettingItem(
+                icon = Icons.Outlined.Phone,
+                title = "Contact Support",
+                onClick = onContactSupportClick,
+                showDivider = false
+            )
+        }
+    }
+}
+
+@Composable
 fun SettingItem(
     icon: ImageVector,
     title: String,
@@ -379,35 +429,6 @@ fun SettingItem(
 }
 
 @Composable
-fun SupportSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column {
-            Text(
-                "Support",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-            SettingItem(Icons.Outlined.HelpOutline, "Help Center", onClick = { })
-            SettingItem(
-                Icons.Outlined.Phone,
-                "Contact Support",
-                onClick = { },
-                showDivider = false
-            )
-        }
-    }
-}
-
-@Composable
 fun LogoutButton() {
     Card(
         modifier = Modifier
@@ -420,7 +441,7 @@ fun LogoutButton() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { }
+                .clickable { /* Çıxış məntiqi */ }
                 .padding(20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically

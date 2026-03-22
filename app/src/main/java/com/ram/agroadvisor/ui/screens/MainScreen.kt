@@ -98,6 +98,12 @@ fun MainScreen(navController: NavController? = null) {
                 },
                 onAppearanceClick = {
                     navController?.navigate(Screen.Appearance.route)
+                },
+                onHelpCenterClick = {
+                    navController?.navigate(Screen.HelpCenter.route)
+                },
+                onContactSupportClick = {
+                    navController?.navigate(Screen.ContactSupport.route)
                 }
             )
         }

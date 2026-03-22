@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,9 +11,11 @@ import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.MainScreen
 import com.ram.agroadvisor.ui.screens.authentication.*
 import com.ram.agroadvisor.ui.screens.home.WeatherScreen
-import com.ram.agroadvisor.ui.screens.profile.AppearanceScreen
+import com.ram.agroadvisor.ui.screens.profile.settings.AppearanceScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
-import com.ram.agroadvisor.ui.screens.profile.AccountSettingsScreen
+import com.ram.agroadvisor.ui.screens.profile.HelpCenterScreen
+import com.ram.agroadvisor.ui.screens.profile.ContactSupportScreen
+import com.ram.agroadvisor.ui.screens.profile.settings.AccountSettingsScreen
 import com.ram.agroadvisor.ui.theme.ThemeMode
 
 sealed class Screen(val route: String) {
@@ -32,6 +33,8 @@ sealed class Screen(val route: String) {
     data object Profile : Screen("profile")
     data object Appearance : Screen("appearance_screen")
     data object AccountSettings : Screen("account_settings_screen")
+    data object HelpCenter : Screen("help_center")
+    data object ContactSupport : Screen("contact_support")
 }
 
 @Composable
@@ -42,10 +45,9 @@ fun NavGraph(
 ) {
     val navController = rememberNavController()
 
-    // Köməkçi funksiya: Alt ekranlardan Home-a (Main) qayıtmaq üçün
+    // Main ekrana qayıtmaq üçün ortaq funksiya
     val navigateToMain = {
         navController.navigate(Screen.Main.route) {
-            // Main-ə qayıdanda arxadakı bütün yolu təmizləyirik
             popUpTo(Screen.Main.route) { inclusive = true }
             launchSingleTop = true
         }
@@ -55,6 +57,7 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        // --- AUTHENTICATION SECTION ---
         composable(Screen.Welcome.route) {
             WelcomeScreen(
                 onLoginClick = { navController.navigate(Screen.Login.route) },
@@ -66,7 +69,6 @@ fun NavGraph(
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Main.route) {
-                        // Əsas nöqtə: Login-dən sonra Welcome-u yığından tam silirik
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
@@ -85,7 +87,6 @@ fun NavGraph(
             FieldDetailsScreen(
                 onCompleteClick = {
                     navController.navigate(Screen.Main.route) {
-                        // Qeydiyyat bitəndə Welcome-u tam silirik
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
@@ -93,17 +94,19 @@ fun NavGraph(
             )
         }
 
+        // --- MAIN APP SECTION ---
         composable(Screen.Main.route) {
             MainScreen(navController = navController)
         }
 
-        // --- Alt Ekranlar (BackHandler əlavə edildi) ---
-
+        // --- PROFILE & SETTINGS SECTION ---
         composable(Screen.Profile.route) {
             BackHandler { navigateToMain() }
             ProfileScreen(
                 onAccountSettingsClick = { navController.navigate(Screen.AccountSettings.route) },
-                onAppearanceClick = { navController.navigate(Screen.Appearance.route) }
+                onAppearanceClick = { navController.navigate(Screen.Appearance.route) },
+                onHelpCenterClick = { navController.navigate(Screen.HelpCenter.route) },
+                onContactSupportClick = { navController.navigate(Screen.ContactSupport.route) }
             )
         }
 
@@ -121,6 +124,17 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.HelpCenter.route) {
+            BackHandler { navController.popBackStack() }
+            HelpCenterScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        composable(Screen.ContactSupport.route) {
+            BackHandler { navController.popBackStack() }
+            ContactSupportScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // --- FEATURES SECTION ---
         composable(Screen.AIAssistant.route) {
             BackHandler { navigateToMain() }
             AIAssistantScreen(
@@ -134,6 +148,7 @@ fun NavGraph(
             WeatherScreen(onBackClick = { navigateToMain() })
         }
 
+        // --- EMPTY ROUTES (FUTURE IMPLEMENTATION) ---
         composable(Screen.Home.route) { }
         composable(Screen.Irrigation.route) { }
         composable(Screen.CropGuide.route) { }
