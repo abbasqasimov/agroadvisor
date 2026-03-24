@@ -27,7 +27,8 @@ fun ProfileScreen(
     onAppearanceClick: () -> Unit,
     onAccountSettingsClick: () -> Unit,
     onHelpCenterClick: () -> Unit,
-    onContactSupportClick: () -> Unit
+    onContactSupportClick: () -> Unit,
+    onLanguageClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -93,7 +94,8 @@ fun ProfileScreen(
             // Ayarlar Bölməsi
             SettingsSection(
                 onAppearanceClick = onAppearanceClick,
-                onAccountSettingsClick = onAccountSettingsClick
+                onAccountSettingsClick = onAccountSettingsClick,
+                onLanguageClick = onLanguageClick
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -304,7 +306,8 @@ fun ContactInfoRow(icon: ImageVector, text: String) {
 @Composable
 fun SettingsSection(
     onAppearanceClick: () -> Unit,
-    onAccountSettingsClick: () -> Unit
+    onAccountSettingsClick: () -> Unit,
+    onLanguageClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -336,6 +339,11 @@ fun SettingsSection(
                 icon = Icons.Outlined.DarkMode,
                 title = "Appearance",
                 onClick = onAppearanceClick
+            )
+            SettingItem(
+                Icons.Outlined.Language,
+                "Language",
+                onClick = onLanguageClick
             )
             SettingItem(
                 Icons.Outlined.Shield,

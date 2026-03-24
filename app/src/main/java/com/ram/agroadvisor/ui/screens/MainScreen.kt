@@ -104,6 +104,9 @@ fun MainScreen(navController: NavController? = null) {
                 },
                 onContactSupportClick = {
                     navController?.navigate(Screen.ContactSupport.route)
+                },
+                onLanguageClick = {
+                    navController?.navigate(Screen.LanguageScreen.route)
                 }
             )
         }

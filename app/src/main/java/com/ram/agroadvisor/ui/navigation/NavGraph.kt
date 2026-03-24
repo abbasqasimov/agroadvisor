@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -11,11 +12,12 @@ import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.MainScreen
 import com.ram.agroadvisor.ui.screens.authentication.*
 import com.ram.agroadvisor.ui.screens.home.WeatherScreen
-import com.ram.agroadvisor.ui.screens.profile.settings.AppearanceScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
 import com.ram.agroadvisor.ui.screens.profile.HelpCenterScreen
 import com.ram.agroadvisor.ui.screens.profile.ContactSupportScreen
 import com.ram.agroadvisor.ui.screens.profile.settings.AccountSettingsScreen
+import com.ram.agroadvisor.ui.screens.profile.settings.AppearanceScreen
+import com.ram.agroadvisor.ui.screens.profile.settings.LanguageScreen // ✅ ƏLAVƏ ET
 import com.ram.agroadvisor.ui.theme.ThemeMode
 
 sealed class Screen(val route: String) {
@@ -35,6 +37,7 @@ sealed class Screen(val route: String) {
     data object AccountSettings : Screen("account_settings_screen")
     data object HelpCenter : Screen("help_center")
     data object ContactSupport : Screen("contact_support")
+    data object LanguageScreen : Screen("language")
 }
 
 @Composable
@@ -45,7 +48,6 @@ fun NavGraph(
 ) {
     val navController = rememberNavController()
 
-    // Main ekrana qayıtmaq üçün ortaq funksiya
     val navigateToMain = {
         navController.navigate(Screen.Main.route) {
             popUpTo(Screen.Main.route) { inclusive = true }
@@ -57,7 +59,8 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
-        // --- AUTHENTICATION SECTION ---
+
+        // --- AUTH ---
         composable(Screen.Welcome.route) {
             WelcomeScreen(
                 onLoginClick = { navController.navigate(Screen.Login.route) },
@@ -94,19 +97,20 @@ fun NavGraph(
             )
         }
 
-        // --- MAIN APP SECTION ---
+        // --- MAIN ---
         composable(Screen.Main.route) {
             MainScreen(navController = navController)
         }
 
-        // --- PROFILE & SETTINGS SECTION ---
+        // --- PROFILE ---
         composable(Screen.Profile.route) {
             BackHandler { navigateToMain() }
             ProfileScreen(
                 onAccountSettingsClick = { navController.navigate(Screen.AccountSettings.route) },
                 onAppearanceClick = { navController.navigate(Screen.Appearance.route) },
                 onHelpCenterClick = { navController.navigate(Screen.HelpCenter.route) },
-                onContactSupportClick = { navController.navigate(Screen.ContactSupport.route) }
+                onContactSupportClick = { navController.navigate(Screen.ContactSupport.route) },
+                onLanguageClick = { navController.navigate(Screen.LanguageScreen.route) }
             )
         }
 
@@ -134,7 +138,15 @@ fun NavGraph(
             ContactSupportScreen(onBackClick = { navController.popBackStack() })
         }
 
-        // --- FEATURES SECTION ---
+        // ✅ BURASI SƏNİN BUG FIX
+        composable(Screen.LanguageScreen.route) {
+            BackHandler { navController.popBackStack() }
+            LanguageScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // --- FEATURES ---
         composable(Screen.AIAssistant.route) {
             BackHandler { navigateToMain() }
             AIAssistantScreen(
@@ -148,7 +160,7 @@ fun NavGraph(
             WeatherScreen(onBackClick = { navigateToMain() })
         }
 
-        // --- EMPTY ROUTES (FUTURE IMPLEMENTATION) ---
+        // --- EMPTY ---
         composable(Screen.Home.route) { }
         composable(Screen.Irrigation.route) { }
         composable(Screen.CropGuide.route) { }
