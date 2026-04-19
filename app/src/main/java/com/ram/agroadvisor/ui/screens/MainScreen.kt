@@ -11,11 +11,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ram.agroadvisor.ui.navigation.Screen
 import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.ai.AISection
 import com.ram.agroadvisor.ui.screens.home.HomeScreen
+import com.ram.agroadvisor.ui.screens.home.WeatherViewModel
+import com.ram.agroadvisor.ui.screens.plus.AnalysisState
 import com.ram.agroadvisor.ui.screens.plus.PlusScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
 import com.ram.agroadvisor.ui.screens.resources.ResourcesScreen
@@ -23,18 +26,21 @@ import com.ram.agroadvisor.ui.screens.resources.ResourcesScreen
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreen(navController: NavController? = null) {
+    val weatherViewModel: WeatherViewModel = viewModel()
     var selectedItem by remember { mutableIntStateOf(0) }
     var isChatActive by remember { mutableStateOf(false) }
+    var analysisState by remember { mutableStateOf(AnalysisState.IDLE) }
 
     val items = listOf(
         BottomNavItem("Home", Icons.Outlined.Home, Icons.Filled.Home),
         BottomNavItem("Resources", Icons.Outlined.Book, Icons.Filled.Book),
-        BottomNavItem("Plus", Icons.Outlined.Add, Icons.Filled.Add),
+        BottomNavItem("Analysis", Icons.Outlined.Add, Icons.Filled.Add),
         BottomNavItem("AI Chat", Icons.Outlined.Chat, Icons.Filled.Chat),
         BottomNavItem("Profile", Icons.Outlined.Person, Icons.Filled.Person)
     )
 
-    val shouldShowBottomBar = !(selectedItem == 3 && isChatActive)
+    val shouldShowBottomBar = !(selectedItem == 3 && isChatActive) &&
+            !(selectedItem == 2 && analysisState == AnalysisState.RESULT)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -53,15 +59,13 @@ fun MainScreen(navController: NavController? = null) {
                                 )
                             },
                             label = {
-                                Text(
-                                    item.label,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
+                                Text(item.label, style = MaterialTheme.typography.labelSmall)
                             },
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
                                 if (index != 3) isChatActive = false
+                                if (index != 2) analysisState = AnalysisState.IDLE
                             },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -77,9 +81,15 @@ fun MainScreen(navController: NavController? = null) {
         }
     ) { _ ->
         when (selectedItem) {
-            0 -> HomeScreen(navController)
+            0 -> HomeScreen(
+                navController = navController,
+                weatherViewModel = weatherViewModel
+            )
             1 -> ResourcesScreen()
-            2 -> PlusScreen()
+            2 -> PlusScreen(
+                analysisState = analysisState,
+                onAnalysisStateChange = { analysisState = it }
+            )
             3 -> {
                 if (isChatActive) {
                     AIAssistantScreen(
@@ -87,9 +97,7 @@ fun MainScreen(navController: NavController? = null) {
                         onBackClick = { isChatActive = false }
                     )
                 } else {
-                    AISection(
-                        onStartChatClick = { isChatActive = true }
-                    )
+                    AISection(onStartChatClick = { isChatActive = true })
                 }
             }
             4 -> ProfileScreen(
@@ -104,9 +112,6 @@ fun MainScreen(navController: NavController? = null) {
                 },
                 onContactSupportClick = {
                     navController?.navigate(Screen.ContactSupport.route)
-                },
-                onLanguageClick = {
-                    navController?.navigate(Screen.LanguageScreen.route)
                 }
             )
         }

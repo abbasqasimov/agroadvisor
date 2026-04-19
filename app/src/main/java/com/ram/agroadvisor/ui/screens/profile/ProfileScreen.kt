@@ -1,5 +1,7 @@
 package com.ram.agroadvisor.ui.screens.profile
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,9 +31,10 @@ fun ProfileScreen(
     onAccountSettingsClick: () -> Unit,
     onHelpCenterClick: () -> Unit,
     onContactSupportClick: () -> Unit,
-    onLanguageClick: () -> Unit
+    onPrivacySecurityClick: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -59,7 +63,6 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Profil başlığı (Şəkil və Ad)
             ProfileHeaderCard(
                 name = "Rajesh Kumar",
                 location = "Ludhiana, Punjab",
@@ -68,7 +71,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Statistika Kartları
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,7 +84,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Əlaqə məlumatları
             ContactInformationCard(
                 phone = "+91 98765 43210",
                 email = "rajesh.kumar@email.com",
@@ -91,16 +92,21 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ayarlar Bölməsi
             SettingsSection(
                 onAppearanceClick = onAppearanceClick,
                 onAccountSettingsClick = onAccountSettingsClick,
-                onLanguageClick = onLanguageClick
+                onNotificationsClick = {
+                    val intent = Intent().apply {
+                        action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                    context.startActivity(intent)
+                },
+                onPrivacySecurityClick = onPrivacySecurityClick
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Dəstək Bölməsi (Help Center və Contact Support bura daxildir)
             SupportSection(
                 onHelpCenterClick = onHelpCenterClick,
                 onContactSupportClick = onContactSupportClick
@@ -108,8 +114,51 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Çıxış düyməsi
             LogoutButton()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // TEST - Bildiriş testi (sonra sil)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            com.ram.agroadvisor.worker.WorkManagerSetup.sendTestNotification(context)
+                        }
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        "Bildirişi Test Et",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            // TEST SONU
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -307,7 +356,8 @@ fun ContactInfoRow(icon: ImageVector, text: String) {
 fun SettingsSection(
     onAppearanceClick: () -> Unit,
     onAccountSettingsClick: () -> Unit,
-    onLanguageClick: () -> Unit
+    onNotificationsClick: () -> Unit = {},
+    onPrivacySecurityClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -325,30 +375,25 @@ fun SettingsSection(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
-
             SettingItem(
                 icon = Icons.Outlined.Settings,
                 title = "Account Settings",
                 onClick = onAccountSettingsClick
             )
             SettingItem(
-                Icons.Outlined.Notifications,
-                "Notifications",
-                onClick = { /* TODO */ })
+                icon = Icons.Outlined.Notifications,
+                title = "Notifications",
+                onClick = onNotificationsClick
+            )
             SettingItem(
                 icon = Icons.Outlined.DarkMode,
                 title = "Appearance",
                 onClick = onAppearanceClick
             )
             SettingItem(
-                Icons.Outlined.Language,
-                "Language",
-                onClick = onLanguageClick
-            )
-            SettingItem(
-                Icons.Outlined.Shield,
-                "Privacy & Security",
-                onClick = { /* TODO */ },
+                icon = Icons.Outlined.Shield,
+                title = "Privacy & Security",
+                onClick = onPrivacySecurityClick,
                 showDivider = false
             )
         }
@@ -449,7 +494,7 @@ fun LogoutButton() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { /* Çıxış məntiqi */ }
+                .clickable { }
                 .padding(20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically

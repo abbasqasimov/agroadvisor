@@ -3,8 +3,9 @@ package com.ram.agroadvisor.ui.navigation
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,12 +13,12 @@ import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.MainScreen
 import com.ram.agroadvisor.ui.screens.authentication.*
 import com.ram.agroadvisor.ui.screens.home.WeatherScreen
-import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
+import com.ram.agroadvisor.ui.screens.home.WeatherViewModel
 import com.ram.agroadvisor.ui.screens.profile.HelpCenterScreen
 import com.ram.agroadvisor.ui.screens.profile.ContactSupportScreen
 import com.ram.agroadvisor.ui.screens.profile.settings.AccountSettingsScreen
 import com.ram.agroadvisor.ui.screens.profile.settings.AppearanceScreen
-import com.ram.agroadvisor.ui.screens.profile.settings.LanguageScreen // ✅ ƏLAVƏ ET
+import com.ram.agroadvisor.ui.screens.resources.CropGuideScreen
 import com.ram.agroadvisor.ui.theme.ThemeMode
 
 sealed class Screen(val route: String) {
@@ -37,7 +38,6 @@ sealed class Screen(val route: String) {
     data object AccountSettings : Screen("account_settings_screen")
     data object HelpCenter : Screen("help_center")
     data object ContactSupport : Screen("contact_support")
-    data object LanguageScreen : Screen("language")
 }
 
 @Composable
@@ -102,25 +102,12 @@ fun NavGraph(
             MainScreen(navController = navController)
         }
 
-        // --- PROFILE ---
-        composable(Screen.Profile.route) {
-            BackHandler { navigateToMain() }
-            ProfileScreen(
-                onAccountSettingsClick = { navController.navigate(Screen.AccountSettings.route) },
-                onAppearanceClick = { navController.navigate(Screen.Appearance.route) },
-                onHelpCenterClick = { navController.navigate(Screen.HelpCenter.route) },
-                onContactSupportClick = { navController.navigate(Screen.ContactSupport.route) },
-                onLanguageClick = { navController.navigate(Screen.LanguageScreen.route) }
-            )
-        }
-
+        // --- SETTINGS ---
         composable(Screen.AccountSettings.route) {
-            BackHandler { navController.popBackStack() }
             AccountSettingsScreen(onBackClick = { navController.popBackStack() })
         }
 
         composable(Screen.Appearance.route) {
-            BackHandler { navController.popBackStack() }
             AppearanceScreen(
                 themeMode = themeMode,
                 onThemeChange = onThemeChange,
@@ -129,21 +116,11 @@ fun NavGraph(
         }
 
         composable(Screen.HelpCenter.route) {
-            BackHandler { navController.popBackStack() }
             HelpCenterScreen(onBackClick = { navController.popBackStack() })
         }
 
         composable(Screen.ContactSupport.route) {
-            BackHandler { navController.popBackStack() }
             ContactSupportScreen(onBackClick = { navController.popBackStack() })
-        }
-
-        // ✅ BURASI SƏNİN BUG FIX
-        composable(Screen.LanguageScreen.route) {
-            BackHandler { navController.popBackStack() }
-            LanguageScreen(
-                onBackClick = { navController.popBackStack() }
-            )
         }
 
         // --- FEATURES ---
@@ -157,13 +134,23 @@ fun NavGraph(
 
         composable(Screen.Weather.route) {
             BackHandler { navigateToMain() }
-            WeatherScreen(onBackClick = { navigateToMain() })
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(Screen.Main.route)
+            }
+            val weatherViewModel: WeatherViewModel = viewModel(parentEntry)
+            WeatherScreen(
+                onBackClick = { navigateToMain() },
+                weatherViewModel = weatherViewModel
+            )
+        }
+
+        composable(Screen.CropGuide.route) {
+            CropGuideScreen(onBackClick = { navController.popBackStack() })
         }
 
         // --- EMPTY ---
         composable(Screen.Home.route) { }
         composable(Screen.Irrigation.route) { }
-        composable(Screen.CropGuide.route) { }
         composable(Screen.MarketPrice.route) { }
     }
 }
