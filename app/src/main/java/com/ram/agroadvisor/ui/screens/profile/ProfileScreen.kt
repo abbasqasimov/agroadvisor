@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.data.local.TokenManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,9 +33,36 @@ fun ProfileScreen(
     onHelpCenterClick: () -> Unit,
     onContactSupportClick: () -> Unit,
     onPrivacySecurityClick: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    val fullName = TokenManager.getFullName(context) ?: "İstifadəçi"
+    val email = TokenManager.getEmail(context) ?: ""
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Çıxış") },
+            text = { Text("Hesabdan çıxmaq istədiyinizə əminsiniz?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    TokenManager.clearAll(context)
+                    onLogout()
+                }) {
+                    Text("Çıx", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Ləğv et")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -64,30 +92,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             ProfileHeaderCard(
-                name = "Rajesh Kumar",
-                location = "Ludhiana, Punjab",
-                membershipType = "Premium Member"
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(Icons.Default.Agriculture, "25", "Acres", Modifier.weight(1f))
-                StatCard(Icons.Default.Eco, "4", "Crops", Modifier.weight(1f))
-                StatCard(Icons.Default.Person, "2", "Years", Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ContactInformationCard(
-                phone = "+91 98765 43210",
-                email = "rajesh.kumar@email.com",
-                address = "Village Khanna, Ludhiana, Punjab 141401"
+                name = fullName,
+                email = email
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -114,7 +120,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LogoutButton()
+            LogoutButton(onClick = { showLogoutDialog = true })
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -136,26 +142,10 @@ fun ProfileScreen(
                         .padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Default.Notifications, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        "Bildirişi Test Et",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("Bildirişi Test Et", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                    Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             // TEST SONU
@@ -166,9 +156,7 @@ fun ProfileScreen(
                 "AgroAdvisor v1.0.0",
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 textAlign = TextAlign.Center
             )
 
@@ -178,18 +166,14 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileHeaderCard(name: String, location: String, membershipType: String) {
+fun ProfileHeaderCard(name: String, email: String) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.size(80.dp)) {
@@ -215,140 +199,16 @@ fun ProfileHeaderCard(name: String, location: String, membershipType: String) {
                         .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(
-                    name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
-                    )
-                    Text(
-                        location,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
-                    )
-                }
-                Text(
-                    membershipType,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(email, fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f))
             }
         }
-    }
-}
-
-@Composable
-fun StatCard(
-    icon: ImageVector,
-    value: String,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-            }
-            Text(
-                value,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                label,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun ContactInformationCard(phone: String, email: String, address: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                "Contact Information",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            ContactInfoRow(Icons.Default.Phone, phone)
-            Spacer(modifier = Modifier.height(16.dp))
-            ContactInfoRow(Icons.Default.Email, email)
-            Spacer(modifier = Modifier.height(16.dp))
-            ContactInfoRow(Icons.Default.LocationOn, address)
-        }
-    }
-}
-
-@Composable
-fun ContactInfoRow(icon: ImageVector, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text,
-            fontSize = 15.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-        )
     }
 }
 
@@ -360,42 +220,17 @@ fun SettingsSection(
     onPrivacySecurityClick: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Text(
-                "Settings",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-            SettingItem(
-                icon = Icons.Outlined.Settings,
-                title = "Account Settings",
-                onClick = onAccountSettingsClick
-            )
-            SettingItem(
-                icon = Icons.Outlined.Notifications,
-                title = "Notifications",
-                onClick = onNotificationsClick
-            )
-            SettingItem(
-                icon = Icons.Outlined.DarkMode,
-                title = "Appearance",
-                onClick = onAppearanceClick
-            )
-            SettingItem(
-                icon = Icons.Outlined.Shield,
-                title = "Privacy & Security",
-                onClick = onPrivacySecurityClick,
-                showDivider = false
-            )
+            Text("Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            SettingItem(icon = Icons.Outlined.Settings, title = "Account Settings", onClick = onAccountSettingsClick)
+            SettingItem(icon = Icons.Outlined.Notifications, title = "Notifications", onClick = onNotificationsClick)
+            SettingItem(icon = Icons.Outlined.DarkMode, title = "Appearance", onClick = onAppearanceClick)
+            SettingItem(icon = Icons.Outlined.Shield, title = "Privacy & Security", onClick = onPrivacySecurityClick, showDivider = false)
         }
     }
 }
@@ -406,32 +241,15 @@ fun SupportSection(
     onContactSupportClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Text(
-                "Support",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-            SettingItem(
-                icon = Icons.Outlined.HelpOutline,
-                title = "Help Center",
-                onClick = onHelpCenterClick
-            )
-            SettingItem(
-                icon = Icons.Outlined.Phone,
-                title = "Contact Support",
-                onClick = onContactSupportClick,
-                showDivider = false
-            )
+            Text("Support", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            SettingItem(icon = Icons.Outlined.HelpOutline, title = "Help Center", onClick = onHelpCenterClick)
+            SettingItem(icon = Icons.Outlined.Phone, title = "Contact Support", onClick = onContactSupportClick, showDivider = false)
         }
     }
 }
@@ -445,73 +263,36 @@ fun SettingItem(
 ) {
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
+            Icon(icon, null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                title,
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                Icons.Default.ChevronRight,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(title, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Icon(Icons.Default.ChevronRight, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (showDivider) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                color = MaterialTheme.colorScheme.outlineVariant,
-                thickness = 1.dp
-            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
         }
     }
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { }
-                .padding(20.dp),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                Icons.Default.Logout,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(20.dp)
-            )
+            Icon(Icons.Default.Logout, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Logout",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.error
-            )
+            Text("Logout", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
         }
     }
 }

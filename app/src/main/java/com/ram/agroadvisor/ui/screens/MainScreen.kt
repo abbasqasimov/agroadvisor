@@ -21,6 +21,7 @@ import com.ram.agroadvisor.ui.screens.home.WeatherViewModel
 import com.ram.agroadvisor.ui.screens.plus.AnalysisState
 import com.ram.agroadvisor.ui.screens.plus.PlusScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
+import com.ram.agroadvisor.ui.screens.resources.CalculatorSection
 import com.ram.agroadvisor.ui.screens.resources.ResourcesScreen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -29,18 +30,20 @@ fun MainScreen(navController: NavController? = null) {
     val weatherViewModel: WeatherViewModel = viewModel()
     var selectedItem by remember { mutableIntStateOf(0) }
     var isChatActive by remember { mutableStateOf(false) }
+    var isCalculatorActive by remember { mutableStateOf(false) }
     var analysisState by remember { mutableStateOf(AnalysisState.IDLE) }
 
     val items = listOf(
         BottomNavItem("Home", Icons.Outlined.Home, Icons.Filled.Home),
-        BottomNavItem("Resources", Icons.Outlined.Book, Icons.Filled.Book),
+        BottomNavItem("Calculator", Icons.Outlined.Calculate, Icons.Filled.Calculate),
         BottomNavItem("Analysis", Icons.Outlined.Add, Icons.Filled.Add),
         BottomNavItem("AI Chat", Icons.Outlined.Chat, Icons.Filled.Chat),
         BottomNavItem("Profile", Icons.Outlined.Person, Icons.Filled.Person)
     )
 
     val shouldShowBottomBar = !(selectedItem == 3 && isChatActive) &&
-            !(selectedItem == 2 && analysisState == AnalysisState.RESULT)
+            !(selectedItem == 2 && analysisState == AnalysisState.RESULT) &&
+            !(selectedItem == 1 && isCalculatorActive)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -66,6 +69,7 @@ fun MainScreen(navController: NavController? = null) {
                                 selectedItem = index
                                 if (index != 3) isChatActive = false
                                 if (index != 2) analysisState = AnalysisState.IDLE
+                                if (index != 1) isCalculatorActive = false
                             },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -85,7 +89,17 @@ fun MainScreen(navController: NavController? = null) {
                 navController = navController,
                 weatherViewModel = weatherViewModel
             )
-            1 -> ResourcesScreen()
+            1 -> {
+                if (isCalculatorActive) {
+                    ResourcesScreen(
+                        onBackClick = { isCalculatorActive = false }
+                    )
+                } else {
+                    CalculatorSection(
+                        onStartCalculatorClick = { isCalculatorActive = true }
+                    )
+                }
+            }
             2 -> PlusScreen(
                 analysisState = analysisState,
                 onAnalysisStateChange = { analysisState = it }
@@ -112,6 +126,14 @@ fun MainScreen(navController: NavController? = null) {
                 },
                 onContactSupportClick = {
                     navController?.navigate(Screen.ContactSupport.route)
+                },
+                onPrivacySecurityClick = {
+                    navController?.navigate(Screen.PrivacySecurity.route)
+                },
+                onLogout = {
+                    navController?.navigate(Screen.Welcome.route) {
+                        popUpTo(Screen.Main.route) { inclusive = true }
+                    }
                 }
             )
         }

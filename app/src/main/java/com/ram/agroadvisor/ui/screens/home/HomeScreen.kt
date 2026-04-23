@@ -27,9 +27,14 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.ram.agroadvisor.data.local.LocalNotification
+import com.ram.agroadvisor.data.local.NotificationRepository
 import com.ram.agroadvisor.data.model.AgroRecommendation
 import com.ram.agroadvisor.data.model.AgroStatus
 import com.ram.agroadvisor.ui.navigation.Screen
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +46,8 @@ fun HomeScreen(
     val context = LocalContext.current
     var showNotifications by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
+    var notifications by remember { mutableStateOf(NotificationRepository.getNotifications(context)) }
+    val unreadCount = notifications.count { !it.isRead }
 
     LaunchedEffect(uiState) {
         if (uiState is WeatherUiState.Success || uiState is WeatherUiState.Error) {
@@ -121,13 +128,21 @@ fun HomeScreen(
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = { showNotifications = !showNotifications }) {
+                        IconButton(onClick = {
+                            showNotifications = !showNotifications
+                            if (!showNotifications) {
+                                NotificationRepository.markAllAsRead(context)
+                                notifications = NotificationRepository.getNotifications(context)
+                            }
+                        }) {
                             BadgedBox(
                                 badge = {
-                                    Badge(
-                                        containerColor = MaterialTheme.colorScheme.error,
-                                        contentColor = MaterialTheme.colorScheme.onError
-                                    ) { Text("3") }
+                                    if (unreadCount > 0) {
+                                        Badge(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                            contentColor = MaterialTheme.colorScheme.onError
+                                        ) { Text(unreadCount.toString()) }
+                                    }
                                 }
                             ) {
                                 Icon(
@@ -137,40 +152,69 @@ fun HomeScreen(
                                 )
                             }
                         }
+
                         DropdownMenu(
                             expanded = showNotifications,
-                            onDismissRequest = { showNotifications = false },
+                            onDismissRequest = {
+                                showNotifications = false
+                                NotificationRepository.markAllAsRead(context)
+                                notifications = NotificationRepository.getNotifications(context)
+                            },
                             modifier = Modifier.width(320.dp)
                         ) {
-                            Text(
-                                "Notifications",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(16.dp)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Bildirişlər",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                if (notifications.isNotEmpty()) {
+                                    TextButton(onClick = {
+                                        NotificationRepository.clearAll(context)
+                                        notifications = emptyList()
+                                    }) {
+                                        Text(
+                                            "Hamısını sil",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
+
                             HorizontalDivider()
-                            NotificationItem(
-                                icon = Icons.Default.WaterDrop,
-                                title = "Irrigation Reminder",
-                                description = "Time to water your wheat field",
-                                time = "5 min ago",
-                                isUnread = true
-                            )
-                            NotificationItem(
-                                icon = Icons.Default.Warning,
-                                title = "Weather Alert",
-                                description = "Heavy rain expected tomorrow",
-                                time = "1 hour ago",
-                                isUnread = true
-                            )
-                            NotificationItem(
-                                icon = Icons.Default.TrendingUp,
-                                title = "Market Update",
-                                description = "Wheat prices increased by 5%",
-                                time = "3 hours ago",
-                                isUnread = true
-                            )
+
+                            if (notifications.isEmpty()) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "Bildiriş yoxdur",
+                                                fontSize = 14.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    },
+                                    onClick = {}
+                                )
+                            } else {
+                                notifications.forEach { notification ->
+                                    LocalNotificationItem(notification = notification)
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                }
+                            }
                         }
                     }
                 },
@@ -184,6 +228,7 @@ fun HomeScreen(
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
+                notifications = NotificationRepository.getNotifications(context)
                 weatherViewModel.fetchWeatherByLocation(context)
             },
             modifier = Modifier
@@ -235,6 +280,84 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+fun LocalNotificationItem(notification: LocalNotification) {
+    val timeText = remember(notification.time) {
+        try {
+            val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale("az"))
+            sdf.format(Date(notification.time))
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    DropdownMenuItem(
+        text = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (!notification.isRead) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        if (notification.title.contains("Kritik") || notification.title.contains("⚠️"))
+                            Icons.Default.Warning
+                        else
+                            Icons.Default.WbSunny,
+                        contentDescription = null,
+                        tint = if (!notification.isRead)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        notification.title,
+                        fontSize = 13.sp,
+                        fontWeight = if (!notification.isRead) FontWeight.SemiBold else FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Text(
+                        notification.message,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        lineHeight = 16.sp
+                    )
+                    Text(
+                        timeText,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
+                if (!notification.isRead) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
+        },
+        onClick = {}
+    )
 }
 
 @Composable
@@ -568,57 +691,4 @@ fun FeaturedArticleCard(title: String, description: String, readMoreText: String
             }
         }
     }
-}
-
-@Composable
-fun NotificationItem(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    time: String,
-    isUnread: Boolean = false
-) {
-    DropdownMenuItem(
-        text = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isUnread) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = if (isUnread) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(title, fontSize = 14.sp, fontWeight = if (isUnread) FontWeight.SemiBold else FontWeight.Normal, color = MaterialTheme.colorScheme.onSurface)
-                    Text(description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                    Text(time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                }
-                if (isUnread) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-            }
-        },
-        onClick = { }
-    )
 }

@@ -13,7 +13,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ram.agroadvisor.data.local.TokenManager
 import com.ram.agroadvisor.ui.navigation.NavGraph
+import com.ram.agroadvisor.ui.navigation.Screen
 import com.ram.agroadvisor.ui.theme.AgroAdvisorTheme
 import com.ram.agroadvisor.ui.theme.ThemeMode
 import com.ram.agroadvisor.ui.theme.ThemeViewModel
@@ -36,7 +38,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Android 13+ üçün bildiriş icazəsi
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
@@ -48,9 +49,15 @@ class MainActivity : ComponentActivity() {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         } else {
-            // Android 13-dən aşağı — icazə lazım deyil
             NotificationHelper.createNotificationChannel(this)
             WorkManagerSetup.scheduleWeatherNotifications(this)
+        }
+
+        // Token varsa birbaşa Main-ə get
+        val startDestination = if (TokenManager.isLoggedIn(this)) {
+            Screen.Main.route
+        } else {
+            Screen.Welcome.route
         }
 
         setContent {
@@ -68,6 +75,7 @@ class MainActivity : ComponentActivity() {
 
             AgroAdvisorTheme(darkTheme = isDarkTheme) {
                 NavGraph(
+                    startDestination = startDestination,
                     themeMode = themeMode,
                     onThemeChange = { mode -> themeViewModel.setThemeMode(mode) }
                 )

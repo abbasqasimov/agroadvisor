@@ -38,6 +38,7 @@ sealed class Screen(val route: String) {
     data object AccountSettings : Screen("account_settings_screen")
     data object HelpCenter : Screen("help_center")
     data object ContactSupport : Screen("contact_support")
+    data object PrivacySecurity : Screen("privacy_security")
 }
 
 @Composable
@@ -47,6 +48,7 @@ fun NavGraph(
     onThemeChange: (ThemeMode) -> Unit = {}
 ) {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = viewModel()
 
     val navigateToMain = {
         navController.navigate(Screen.Main.route) {
@@ -75,14 +77,16 @@ fun NavGraph(
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
-                onRegisterClick = { navController.navigate(Screen.SignUp.route) }
+                onRegisterClick = { navController.navigate(Screen.SignUp.route) },
+                authViewModel = authViewModel
             )
         }
 
         composable(Screen.SignUp.route) {
             SignUpScreen(
                 onSignUpSuccess = { navController.navigate(Screen.FieldDetails.route) },
-                onBackToLogin = { navController.popBackStack() }
+                onBackToLogin = { navController.popBackStack() },
+                authViewModel = authViewModel
             )
         }
 

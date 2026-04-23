@@ -5,7 +5,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.ram.agroadvisor.R
+import com.ram.agroadvisor.data.local.LocalNotification
+import com.ram.agroadvisor.data.local.NotificationRepository
 
 object NotificationHelper {
 
@@ -34,7 +35,6 @@ object NotificationHelper {
         notificationId: Int = 1001
     ) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
@@ -43,8 +43,13 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
-
         manager.notify(notificationId, notification)
+
+        // Lokal-a saxla
+        NotificationRepository.saveNotification(
+            context,
+            LocalNotification(title = title, message = message)
+        )
     }
 
     fun sendCriticalWeatherAlert(
@@ -53,7 +58,6 @@ object NotificationHelper {
         notificationId: Int = 1002
     ) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setContentTitle("⚠️ Kritik Hava Xəbərdarlığı")
@@ -62,7 +66,15 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
-
         manager.notify(notificationId, notification)
+
+        // Lokal-a saxla
+        NotificationRepository.saveNotification(
+            context,
+            LocalNotification(
+                title = "⚠️ Kritik Hava Xəbərdarlığı",
+                message = message
+            )
+        )
     }
 }
