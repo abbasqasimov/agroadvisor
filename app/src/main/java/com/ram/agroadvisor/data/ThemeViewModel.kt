@@ -2,10 +2,12 @@ package com.ram.agroadvisor.ui.theme
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 
 enum class ThemeMode {
     LIGHT,
@@ -13,7 +15,10 @@ enum class ThemeMode {
     SYSTEM
 }
 
-class ThemeViewModel(private val context: Context) : ViewModel() {
+@HiltViewModel
+class ThemeViewModel @Inject constructor(
+    @ApplicationContext context: Context
+) : ViewModel() {
     private val PREFS_NAME = "agroadvisor_theme_v2"
     private val THEME_MODE_KEY = "theme_mode"
 
@@ -34,15 +39,5 @@ class ThemeViewModel(private val context: Context) : ViewModel() {
     fun setThemeMode(mode: ThemeMode) {
         sharedPreferences.edit().putString(THEME_MODE_KEY, mode.name).apply()
         _themeMode.value = mode
-    }
-}
-
-class ThemeViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ThemeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ThemeViewModel(context) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

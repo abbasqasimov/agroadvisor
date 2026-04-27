@@ -1,4 +1,4 @@
-package com.ram.agroadvisor.ui.screens.resources
+package com.ram.agroadvisor.ui.screens.calculator
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,20 +10,162 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.data.CalculatorResponse
+import com.ram.agroadvisor.ui.screens.resources.CalculatorUiState
+import com.ram.agroadvisor.ui.screens.resources.CalculatorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResourcesScreen(
-    onBackClick: () -> Unit = {},
-    calculatorViewModel: CalculatorViewModel = viewModel()
+fun CalculatorScreen() {
+    val calculatorViewModel: CalculatorViewModel = hiltViewModel()
+    var showLanding by rememberSaveable { mutableStateOf(true) }
+
+    if (showLanding) {
+        CalculatorLanding(onOpen = { showLanding = false })
+    } else {
+        CalculatorForm(
+            calculatorViewModel = calculatorViewModel,
+            onBack = { showLanding = true }
+        )
+    }
+}
+
+@Composable
+private fun CalculatorLanding(onOpen: () -> Unit) {
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF2E7D32),
+            Color(0xFF66BB6A)
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradientBrush)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .offset(x = 180.dp, y = (-50).dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.05f))
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Calculate,
+                    contentDescription = null,
+                    modifier = Modifier.size(70.dp),
+                    tint = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "Gübrə Kalkulyatoru",
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Bitkiyə lazım olan NPK gübrə miqdarını AI köməyi ilə hesablayın.",
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            CalculatorFeatureRow(icon = Icons.Default.Grass, label = "Bitki növünə görə hesablama")
+            CalculatorFeatureRow(icon = Icons.Default.Landscape, label = "Torpaq növünü nəzərə alır")
+            CalculatorFeatureRow(icon = Icons.Default.AutoAwesome, label = "AI tövsiyələri ilə dəstək")
+
+            Spacer(modifier = Modifier.height(56.dp))
+
+            Button(
+                onClick = onOpen,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = Color(0xFF2E7D32)
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp)
+            ) {
+                Text(
+                    text = "Kalkulyatoru Aç",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalculatorFeatureRow(icon: ImageVector, label: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White.copy(alpha = 0.07f))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.9f)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CalculatorForm(
+    calculatorViewModel: CalculatorViewModel,
+    onBack: () -> Unit
 ) {
     val uiState by calculatorViewModel.uiState.collectAsState()
 
@@ -52,7 +194,7 @@ fun ResourcesScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Back",

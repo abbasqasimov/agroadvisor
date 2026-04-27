@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 import com.ram.agroadvisor.ui.theme.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,8 +22,8 @@ import com.ram.agroadvisor.ui.theme.ThemeMode
 fun AppearanceScreen(
     themeMode: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit,
-    onBackClick: () -> Unit
 ) {
+    val navController = LocalNavController.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -35,7 +36,7 @@ fun AppearanceScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",

@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContactSupportScreen(onBackClick: () -> Unit) {
+fun ContactSupportScreen() {
+    val navController = LocalNavController.current
     var message by remember { mutableStateOf("") }
 
     Scaffold(
@@ -24,7 +26,7 @@ fun ContactSupportScreen(onBackClick: () -> Unit) {
             TopAppBar(
                 title = { Text("Contact Support") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }

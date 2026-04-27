@@ -8,14 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.ram.agroadvisor.data.RetrofitInstance
+import com.ram.agroadvisor.data.WeatherApi
+import com.ram.agroadvisor.data.local.LocalNotification
+import com.ram.agroadvisor.data.local.NotificationRepository
 import com.ram.agroadvisor.data.model.AgroRecommendation
 import com.ram.agroadvisor.data.model.AgroStatus
 import com.ram.agroadvisor.data.model.WeatherResponse
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
 sealed class WeatherUiState {
     object Loading : WeatherUiState()
@@ -23,7 +28,12 @@ sealed class WeatherUiState {
     data class Error(val message: String) : WeatherUiState()
 }
 
-class WeatherViewModel : ViewModel() {
+@HiltViewModel
+class WeatherViewModel @Inject constructor(
+    private val weatherApi: WeatherApi,
+    private val notificationRepository: NotificationRepository,
+    @ApplicationContext private val context: Context
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val uiState: StateFlow<WeatherUiState> = _uiState
@@ -33,14 +43,20 @@ class WeatherViewModel : ViewModel() {
 
     private val apiKey = "40ab85541de6480e9aa205106252910"
 
-    fun fetchWeatherByLocation(context: Context) {
+    // Notification delegation
+    fun getNotifications(): List<LocalNotification> = notificationRepository.getNotifications()
+    fun markAllAsRead() = notificationRepository.markAllAsRead()
+    fun clearAllNotifications() = notificationRepository.clearAll()
+    fun getUnreadCount(): Int = notificationRepository.getUnreadCount()
+
+    fun fetchWeatherByLocation() {
         viewModelScope.launch {
             _uiState.value = WeatherUiState.Loading
             try {
-                val location = getCurrentLocation(context)
+                val location = getCurrentLocation()
                 if (location != null) {
                     val query = "${location.latitude},${location.longitude}"
-                    val response = RetrofitInstance.api.getForecast(
+                    val response = weatherApi.getForecast(
                         apiKey = apiKey,
                         city = query,
                         days = 14
@@ -56,7 +72,7 @@ class WeatherViewModel : ViewModel() {
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun getCurrentLocation(context: Context): Location? {
+    private suspend fun getCurrentLocation(): Location? {
         return try {
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
             val cancellationToken = CancellationTokenSource()
@@ -73,7 +89,7 @@ class WeatherViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = WeatherUiState.Loading
             try {
-                val response = RetrofitInstance.api.getForecast(
+                val response = weatherApi.getForecast(
                     apiKey = apiKey,
                     city = city,
                     days = 14
@@ -92,7 +108,7 @@ class WeatherViewModel : ViewModel() {
         }
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.searchCities(
+                val response = weatherApi.searchCities(
                     apiKey = apiKey,
                     query = query
                 )
@@ -112,7 +128,6 @@ class WeatherViewModel : ViewModel() {
         val rain = data.forecast.forecastday.firstOrNull()?.day?.daily_chance_of_rain ?: 0
         val wind = data.current.wind_kph
         val humidity = data.current.humidity
-        val uv = data.current.uv
 
         return listOf(
             AgroRecommendation(

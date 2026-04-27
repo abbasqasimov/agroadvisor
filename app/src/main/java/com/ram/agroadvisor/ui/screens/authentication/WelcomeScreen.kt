@@ -12,12 +12,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 
 @Composable
-fun WelcomeScreen(
-    onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit
-) {
+fun WelcomeScreen() {
+    val navController = LocalNavController.current
+    val onLoginClick = { navController.navigate(Screen.Login.route) }
+    val onRegisterClick = { navController.navigate(Screen.SignUp.route) }
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.secondaryContainer,

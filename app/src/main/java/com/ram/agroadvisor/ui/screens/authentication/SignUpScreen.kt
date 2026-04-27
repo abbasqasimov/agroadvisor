@@ -15,22 +15,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 
 @Composable
-fun SignUpScreen(
-    onSignUpSuccess: () -> Unit,
-    onBackToLogin: () -> Unit = {},
-    authViewModel: AuthViewModel = viewModel()
-) {
-    val context = LocalContext.current
+fun SignUpScreen() {
+
+
+    val navController = LocalNavController.current
+    val onSignUpSuccess: () -> Unit = {
+        navController.navigate(Screen.FieldDetails.route)
+    }
+    val onBackToLogin: () -> Unit = {navController.popBackStack()}
+    val authViewModel: AuthViewModel = hiltViewModel()
     val uiState by authViewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
@@ -202,7 +206,7 @@ fun SignUpScreen(
                     emailError = validateEmail(email)
                     passwordError = validatePassword(password)
                     if (fullNameError == null && emailError == null && passwordError == null) {
-                        authViewModel.register(context, email, password, fullName)
+                        authViewModel.register(email, password, fullName)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),

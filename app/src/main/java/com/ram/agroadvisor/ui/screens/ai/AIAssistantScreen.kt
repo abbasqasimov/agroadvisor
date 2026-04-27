@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ram.agroadvisor.data.ChatMessage
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -35,10 +36,10 @@ data class ChatHistory(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AIAssistantScreen(
-    mainPadding: PaddingValues,
-    onBackClick: () -> Unit = {}
-) {
+fun AIAssistantScreen() {
+
+    val navController = LocalNavController.current
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -149,13 +150,13 @@ fun AIAssistantScreen(
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onPrimary)
-                        }
+                      IconButton(onClick = {navController.popBackStack()}) {
+                          Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
+                      }
                     },
                     actions = {
-                        IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -164,49 +165,45 @@ fun AIAssistantScreen(
                 )
             },
             bottomBar = {
-                Surface(
-                    modifier = Modifier.fillMaxWidth().imePadding(),
-                    shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surface
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .imePadding()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextField(
-                            value = messageText,
-                            onValueChange = { messageText = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = {
-                                Text("Ask me anything about farming...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            },
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f)
-                            ),
-                            shape = RoundedCornerShape(28.dp),
-                            singleLine = true,
-                            trailingIcon = {
-                                if (messageText.isNotEmpty()) {
-                                    IconButton(onClick = { messageText = "" }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
+                    TextField(
+                        value = messageText,
+                        onValueChange = { messageText = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = {
+                            Text("Ask me anything about farming...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f)
+                        ),
+                        shape = RoundedCornerShape(28.dp),
+                        singleLine = true,
+                        trailingIcon = {
+                            if (messageText.isNotEmpty()) {
+                                IconButton(onClick = { messageText = "" }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        FloatingActionButton(
-                            onClick = { handleSend(messageText) },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(56.dp),
-                            shape = CircleShape
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
                         }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    FloatingActionButton(
+                        onClick = { handleSend(messageText) },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(56.dp),
+                        shape = CircleShape
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -216,7 +213,7 @@ fun AIAssistantScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = innerPadding.calculateTopPadding()),
-                contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp, top = 16.dp),
+                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 16.dp, start = 16.dp, end = 16.dp, top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(messages) { msg ->

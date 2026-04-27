@@ -23,24 +23,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ram.agroadvisor.data.local.TokenManager
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
-    onAppearanceClick: () -> Unit,
-    onAccountSettingsClick: () -> Unit,
-    onHelpCenterClick: () -> Unit,
-    onContactSupportClick: () -> Unit,
-    onPrivacySecurityClick: () -> Unit = {},
-    onLogout: () -> Unit = {}
-) {
+fun ProfileScreen() {
+    val profileViewModel: ProfileViewModel = hiltViewModel()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val navController = LocalNavController.current
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val fullName = TokenManager.getFullName(context) ?: "İstifadəçi"
-    val email = TokenManager.getEmail(context) ?: ""
+    val onAccountSettingsClick = {
+        navController.navigate(Screen.AccountSettings.route)
+    }
+    val onAppearanceClick = {
+        navController.navigate(Screen.Appearance.route)
+    }
+    val onHelpCenterClick = {
+        navController.navigate(Screen.HelpCenter.route)
+    }
+    val onContactSupportClick = {
+        navController.navigate(Screen.ContactSupport.route)
+    }
+    val onPrivacySecurityClick = {
+        navController.navigate(Screen.PrivacySecurity.route)
+    }
+    val onLogout = {
+        navController.navigate(Screen.Welcome.route) {
+            popUpTo(Screen.Home.route) { inclusive = true }
+        }
+    }
+
+    val fullName = profileViewModel.getFullName()
+    val email = profileViewModel.getEmail()
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -50,7 +68,7 @@ fun ProfileScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showLogoutDialog = false
-                    TokenManager.clearAll(context)
+                    profileViewModel.logout()
                     onLogout()
                 }) {
                     Text("Çıx", color = MaterialTheme.colorScheme.error)

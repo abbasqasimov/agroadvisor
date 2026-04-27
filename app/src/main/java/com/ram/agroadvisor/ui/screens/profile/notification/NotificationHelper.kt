@@ -5,8 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.ram.agroadvisor.data.local.LocalNotification
-import com.ram.agroadvisor.data.local.NotificationRepository
 
 object NotificationHelper {
 
@@ -44,12 +42,6 @@ object NotificationHelper {
             .setAutoCancel(true)
             .build()
         manager.notify(notificationId, notification)
-
-        // Lokal-a saxla
-        NotificationRepository.saveNotification(
-            context,
-            LocalNotification(title = title, message = message)
-        )
     }
 
     fun sendCriticalWeatherAlert(
@@ -67,14 +59,5 @@ object NotificationHelper {
             .setAutoCancel(true)
             .build()
         manager.notify(notificationId, notification)
-
-        // Lokal-a saxla
-        NotificationRepository.saveNotification(
-            context,
-            LocalNotification(
-                title = "⚠️ Kritik Hava Xəbərdarlığı",
-                message = message
-            )
-        )
     }
 }

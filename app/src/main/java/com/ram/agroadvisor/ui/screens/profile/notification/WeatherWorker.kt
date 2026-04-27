@@ -3,18 +3,26 @@ package com.ram.agroadvisor.worker
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.ram.agroadvisor.data.RetrofitInstance
+import com.ram.agroadvisor.data.WeatherApi
+import com.ram.agroadvisor.data.local.LocalNotification
+import com.ram.agroadvisor.data.local.NotificationRepository
 import com.ram.agroadvisor.util.NotificationHelper
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.tasks.await
 
-class WeatherWorker(
-    private val context: Context,
-    workerParams: WorkerParameters
+@HiltWorker
+class WeatherWorker @AssistedInject constructor(
+    @Assisted private val context: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val weatherApi: WeatherApi,
+    private val notificationRepository: NotificationRepository
 ) : CoroutineWorker(context, workerParams) {
 
     private val apiKey = "40ab85541de6480e9aa205106252910"
@@ -30,7 +38,7 @@ class WeatherWorker(
                 "Baku"
             }
 
-            val weather = RetrofitInstance.api.getForecast(
+            val weather = weatherApi.getForecast(
                 apiKey = apiKey,
                 city = query,
                 days = 1
@@ -49,10 +57,17 @@ class WeatherWorker(
             if (temp > 38) criticalAlerts.add("🌡️ Həddindən artıq isti ${temp}°C")
 
             if (criticalAlerts.isNotEmpty()) {
+                val alertMessage = "$locationName: ${criticalAlerts.joinToString(", ")}"
                 NotificationHelper.sendCriticalWeatherAlert(
                     context = context,
-                    message = "$locationName: ${criticalAlerts.joinToString(", ")}",
+                    message = alertMessage,
                     notificationId = 1002
+                )
+                notificationRepository.saveNotification(
+                    LocalNotification(
+                        title = "⚠️ Kritik Hava Xəbərdarlığı",
+                        message = alertMessage
+                    )
                 )
             }
 
@@ -63,11 +78,15 @@ class WeatherWorker(
                 else -> "Sahə işləri üçün uyğun gün"
             }
 
+            val title = "🌤️ $locationName — $temp°C, $condition"
             NotificationHelper.sendWeatherNotification(
                 context = context,
-                title = "🌤️ $locationName — $temp°C, $condition",
+                title = title,
                 message = agroTip,
                 notificationId = 1001
+            )
+            notificationRepository.saveNotification(
+                LocalNotification(title = title, message = agroTip)
             )
 
             Result.success()

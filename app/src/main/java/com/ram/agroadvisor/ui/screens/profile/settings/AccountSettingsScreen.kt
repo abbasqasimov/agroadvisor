@@ -14,12 +14,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountSettingsScreen(
-    onBackClick: () -> Unit
-) {
+fun AccountSettingsScreen() {
+    val navController = LocalNavController.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,7 +33,7 @@ fun AccountSettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",

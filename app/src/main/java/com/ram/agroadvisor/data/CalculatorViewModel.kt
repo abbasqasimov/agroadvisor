@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ram.agroadvisor.data.CalculatorRequest
 import com.ram.agroadvisor.data.CalculatorResponse
-import com.ram.agroadvisor.data.remote.AgroRetrofitInstance
+import com.ram.agroadvisor.data.remote.AgroApi
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class CalculatorUiState {
     object Idle : CalculatorUiState()
@@ -16,7 +18,10 @@ sealed class CalculatorUiState {
     data class Error(val message: String) : CalculatorUiState()
 }
 
-class CalculatorViewModel : ViewModel() {
+@HiltViewModel
+class CalculatorViewModel @Inject constructor(
+    private val agroApi: AgroApi
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CalculatorUiState>(CalculatorUiState.Idle)
     val uiState: StateFlow<CalculatorUiState> = _uiState
@@ -30,7 +35,7 @@ class CalculatorViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = CalculatorUiState.Loading
             try {
-                val response = AgroRetrofitInstance.api.calculate(
+                val response = agroApi.calculate(
                     CalculatorRequest(
                         cropType = cropType,
                         growthStage = growthStage,

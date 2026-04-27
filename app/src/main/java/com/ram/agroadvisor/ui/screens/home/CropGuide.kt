@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 data class Crop(
     val id: Int,
@@ -320,7 +321,8 @@ val mockCrops = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CropGuideScreen(onBackClick: () -> Unit = {}) {
+fun CropGuideScreen() {
+    val navController = LocalNavController.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedCrop by remember { mutableStateOf<Crop?>(null) }
 
@@ -346,7 +348,7 @@ fun CropGuideScreen(onBackClick: () -> Unit = {}) {
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = onBackClick) {
+                        IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },

@@ -12,18 +12,23 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.data.local.TokenManager
-import com.ram.agroadvisor.ui.navigation.NavGraph
+import com.ram.agroadvisor.ui.navigation.AppNavigation
 import com.ram.agroadvisor.ui.navigation.Screen
 import com.ram.agroadvisor.ui.theme.AgroAdvisorTheme
 import com.ram.agroadvisor.ui.theme.ThemeMode
 import com.ram.agroadvisor.ui.theme.ThemeViewModel
-import com.ram.agroadvisor.ui.theme.ThemeViewModelFactory
 import com.ram.agroadvisor.util.NotificationHelper
 import com.ram.agroadvisor.worker.WorkManagerSetup
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -53,17 +58,14 @@ class MainActivity : ComponentActivity() {
             WorkManagerSetup.scheduleWeatherNotifications(this)
         }
 
-        // Token varsa birbaşa Main-ə get
-        val startDestination = if (TokenManager.isLoggedIn(this)) {
-            Screen.Main.route
+        val startDestination = if (tokenManager.isLoggedIn()) {
+            Screen.Home.route
         } else {
             Screen.Welcome.route
         }
 
         setContent {
-            val themeViewModel: ThemeViewModel = viewModel(
-                factory = ThemeViewModelFactory(applicationContext)
-            )
+            val themeViewModel: ThemeViewModel = hiltViewModel()
             val themeMode by themeViewModel.themeMode.collectAsState()
             val systemInDarkTheme = isSystemInDarkTheme()
 
@@ -74,7 +76,7 @@ class MainActivity : ComponentActivity() {
             }
 
             AgroAdvisorTheme(darkTheme = isDarkTheme) {
-                NavGraph(
+                AppNavigation(
                     startDestination = startDestination,
                     themeMode = themeMode,
                     onThemeChange = { mode -> themeViewModel.setThemeMode(mode) }

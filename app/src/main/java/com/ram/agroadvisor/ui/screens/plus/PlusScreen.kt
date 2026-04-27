@@ -47,10 +47,11 @@ data class DiseaseResult(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlusScreen(
-    analysisState: AnalysisState = AnalysisState.IDLE,
-    onAnalysisStateChange: (AnalysisState) -> Unit = {}
-) {
+fun PlusScreen() {
+
+    var analysisState by remember { mutableStateOf(AnalysisState.IDLE) }
+    val onAnalysisStateChange: (AnalysisState) -> Unit = { analysisState = it }
+
     val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showPermissionDialog by remember { mutableStateOf(false) }

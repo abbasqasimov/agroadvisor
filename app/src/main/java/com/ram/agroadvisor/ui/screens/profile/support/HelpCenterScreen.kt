@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpCenterScreen(onBackClick: () -> Unit) {
+fun HelpCenterScreen() {
+    val navController = LocalNavController.current
     val faqs = listOf(
         "How to track crop growth?" to "Navigate to the My Crops section and select your specific field to see real-time updates.",
         "How to use the AI Assistant?" to "Click the robot icon in the menu to ask questions about soil, weather, or crop diseases.",
@@ -32,7 +34,7 @@ fun HelpCenterScreen(onBackClick: () -> Unit) {
             TopAppBar(
                 title = { Text("Help Center") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }

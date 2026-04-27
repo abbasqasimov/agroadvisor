@@ -25,12 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.data.local.LocalNotification
-import com.ram.agroadvisor.data.local.NotificationRepository
 import com.ram.agroadvisor.data.model.AgroRecommendation
 import com.ram.agroadvisor.data.model.AgroStatus
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 import com.ram.agroadvisor.ui.navigation.Screen
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,15 +37,14 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    navController: NavController? = null,
-    weatherViewModel: WeatherViewModel = viewModel()
-) {
+fun HomeScreen() {
+    val navController = LocalNavController.current
+    val weatherViewModel: WeatherViewModel = hiltViewModel()
     val uiState by weatherViewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showNotifications by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
-    var notifications by remember { mutableStateOf(NotificationRepository.getNotifications(context)) }
+    var notifications by remember { mutableStateOf(weatherViewModel.getNotifications()) }
     val unreadCount = notifications.count { !it.isRead }
 
     LaunchedEffect(uiState) {
@@ -60,7 +58,7 @@ fun HomeScreen(
     ) { permissions ->
         val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (granted) weatherViewModel.fetchWeatherByLocation(context)
+        if (granted) weatherViewModel.fetchWeatherByLocation()
         else weatherViewModel.fetchWeather("Baku")
     }
 
@@ -73,7 +71,7 @@ fun HomeScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (fineGranted || coarseGranted) {
-            weatherViewModel.fetchWeatherByLocation(context)
+            weatherViewModel.fetchWeatherByLocation()
         } else {
             locationPermissionLauncher.launch(
                 arrayOf(
@@ -131,8 +129,8 @@ fun HomeScreen(
                         IconButton(onClick = {
                             showNotifications = !showNotifications
                             if (!showNotifications) {
-                                NotificationRepository.markAllAsRead(context)
-                                notifications = NotificationRepository.getNotifications(context)
+                                weatherViewModel.markAllAsRead()
+                                notifications = weatherViewModel.getNotifications()
                             }
                         }) {
                             BadgedBox(
@@ -157,8 +155,8 @@ fun HomeScreen(
                             expanded = showNotifications,
                             onDismissRequest = {
                                 showNotifications = false
-                                NotificationRepository.markAllAsRead(context)
-                                notifications = NotificationRepository.getNotifications(context)
+                                weatherViewModel.markAllAsRead()
+                                notifications = weatherViewModel.getNotifications()
                             },
                             modifier = Modifier.width(320.dp)
                         ) {
@@ -177,7 +175,7 @@ fun HomeScreen(
                                 )
                                 if (notifications.isNotEmpty()) {
                                     TextButton(onClick = {
-                                        NotificationRepository.clearAll(context)
+                                        weatherViewModel.clearAllNotifications()
                                         notifications = emptyList()
                                     }) {
                                         Text(
@@ -228,12 +226,12 @@ fun HomeScreen(
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
-                notifications = NotificationRepository.getNotifications(context)
-                weatherViewModel.fetchWeatherByLocation(context)
+                notifications = weatherViewModel.getNotifications()
+                weatherViewModel.fetchWeatherByLocation()
             },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(top = paddingValues.calculateTopPadding())
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -248,13 +246,13 @@ fun HomeScreen(
                         recommendation = recommendation,
                         weatherEmoji = weatherIcon,
                         isLoading = uiState is WeatherUiState.Loading,
-                        onClick = { navController?.navigate(Screen.Weather.route) }
+                        onClick = { navController.navigate(Screen.Weather.route) }
                     )
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
-                    FeatureGrid(navController)
+                    FeatureGrid()
                 }
 
                 if (agroRecommendations.isNotEmpty()) {
@@ -502,7 +500,8 @@ fun WeatherCard(
 }
 
 @Composable
-fun FeatureGrid(navController: NavController? = null) {
+fun FeatureGrid() {
+    val navController = LocalNavController.current
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -512,13 +511,7 @@ fun FeatureGrid(navController: NavController? = null) {
                 icon = Icons.Default.Chat,
                 title = "AI Assistant",
                 modifier = Modifier.weight(1f),
-                onClick = { navController?.navigate(Screen.AIAssistant.route) }
-            )
-            FeatureCard(
-                icon = Icons.Default.WaterDrop,
-                title = "Irrigation",
-                modifier = Modifier.weight(1f),
-                onClick = { navController?.navigate(Screen.Irrigation.route) }
+                onClick = { navController.navigate(Screen.AIAssistant.route) }
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -530,13 +523,7 @@ fun FeatureGrid(navController: NavController? = null) {
                 icon = Icons.Default.Eco,
                 title = "Crop Guide",
                 modifier = Modifier.weight(1f),
-                onClick = { navController?.navigate(Screen.CropGuide.route) }
-            )
-            FeatureCard(
-                icon = Icons.Default.TrendingUp,
-                title = "Market Price",
-                modifier = Modifier.weight(1f),
-                onClick = { navController?.navigate(Screen.MarketPrice.route) }
+                onClick = { navController.navigate(Screen.CropGuide.route) }
             )
         }
     }

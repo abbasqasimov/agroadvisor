@@ -26,15 +26,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.data.model.WeatherResponse
+import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeatherScreen(
-    onBackClick: () -> Unit = {},
-    weatherViewModel: WeatherViewModel = viewModel()
-) {
+fun WeatherScreen() {
+    val navController = LocalNavController.current
+    val weatherViewModel: WeatherViewModel = hiltViewModel()
     val uiState by weatherViewModel.uiState.collectAsState()
     val suggestions by weatherViewModel.suggestions.collectAsState()
     var isSearchActive by remember { mutableStateOf(false) }
@@ -51,7 +51,7 @@ fun WeatherScreen(
         val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (granted) {
-            weatherViewModel.fetchWeatherByLocation(context)
+            weatherViewModel.fetchWeatherByLocation()
         } else {
             weatherViewModel.fetchWeather("Baku")
         }
@@ -68,7 +68,7 @@ fun WeatherScreen(
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
         if (fineGranted || coarseGranted) {
-            weatherViewModel.fetchWeatherByLocation(context)
+            weatherViewModel.fetchWeatherByLocation()
         } else {
             locationPermissionLauncher.launch(
                 arrayOf(
@@ -134,7 +134,7 @@ fun WeatherScreen(
                         Text("Weather", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     },
                     navigationIcon = {
-                        IconButton(onClick = onBackClick) {
+                        IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
@@ -142,7 +142,7 @@ fun WeatherScreen(
                         IconButton(onClick = { isSearchActive = true }) {
                             Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White)
                         }
-                        IconButton(onClick = { weatherViewModel.fetchWeatherByLocation(context) }) {
+                        IconButton(onClick = { weatherViewModel.fetchWeatherByLocation() }) {
                             Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White)
                         }
                     },
@@ -178,7 +178,7 @@ fun WeatherScreen(
                             modifier = Modifier.padding(16.dp)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        Button(onClick = { weatherViewModel.fetchWeatherByLocation(context) }) {
+                        Button(onClick = { weatherViewModel.fetchWeatherByLocation() }) {
                             Text("Yenidən cəhd et")
                         }
                     }
@@ -392,7 +392,9 @@ fun WeatherContent(data: WeatherResponse, skyBlue: Color, skyBlueDark: Color) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(4.dp)
@@ -417,7 +419,9 @@ fun WeatherContent(data: WeatherResponse, skyBlue: Color, skyBlueDark: Color) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(4.dp)

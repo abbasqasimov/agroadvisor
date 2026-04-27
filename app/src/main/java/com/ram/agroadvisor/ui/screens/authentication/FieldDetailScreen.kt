@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -24,10 +26,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FieldDetailsScreen(
-    onCompleteClick: () -> Unit,
-    onBackClick: () -> Unit
-) {
+fun FieldDetailsScreen() {
+    val navController = LocalNavController.current
+    val onCompleteClick = {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Welcome.route) { inclusive = true }
+        }
+    }
+    val onBackClick = { navController.popBackStack() }
     val scrollState = rememberScrollState()
 
     var fieldName by remember { mutableStateOf("") }

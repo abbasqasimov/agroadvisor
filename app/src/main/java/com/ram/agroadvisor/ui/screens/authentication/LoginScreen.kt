@@ -12,22 +12,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit = {},
-    onRegisterClick: () -> Unit = {},
-    authViewModel: AuthViewModel = viewModel()
-) {
-    val context = LocalContext.current
+fun LoginScreen() {
+    val navController = LocalNavController.current
+    val onLoginSuccess: () -> Unit = {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Welcome.route) { inclusive = true }
+        }
+    }
+    val onRegisterClick: () -> Unit = {navController.navigate(Screen.SignUp.route)}
+    val authViewModel: AuthViewModel = hiltViewModel()
     val uiState by authViewModel.uiState.collectAsState()
 
     var email by remember { mutableStateOf("") }
@@ -178,7 +182,7 @@ fun LoginScreen(
                     emailError = validateEmail(email)
                     passwordError = validatePassword(password)
                     if (emailError == null && passwordError == null) {
-                        authViewModel.login(context, email, password)
+                        authViewModel.login(email, password)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
