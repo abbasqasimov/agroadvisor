@@ -6,16 +6,18 @@ import com.ram.agroadvisor.data.local.TokenManager
 import com.ram.agroadvisor.data.model.LoginRequest
 import com.ram.agroadvisor.data.model.RegisterRequest
 import com.ram.agroadvisor.data.remote.AgroApi
+import com.ram.agroadvisor.data.remote.ApiErrorParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 sealed class AuthUiState {
-    object Idle : AuthUiState()
-    object Loading : AuthUiState()
-    object Success : AuthUiState()
+    data object Idle : AuthUiState()
+    data object Loading : AuthUiState()
+    data object Success : AuthUiState()
     data class Error(val message: String) : AuthUiState()
 }
 
@@ -34,13 +36,18 @@ class AuthViewModel @Inject constructor(
             try {
                 val response = agroApi.login(LoginRequest(email = email, password = password))
                 tokenManager.saveToken(response.token)
-                tokenManager.saveUserInfo(email, "")
+                // Preserve any name we already collected; otherwise fall back to email.
+                if (tokenManager.getEmail().isNullOrBlank()) {
+                    tokenManager.saveUserInfo(email, tokenManager.getFullName().orEmpty())
+                } else {
+                    tokenManager.saveUserInfo(email, tokenManager.getFullName().orEmpty())
+                }
                 _uiState.value = AuthUiState.Success
-            } catch (e: retrofit2.HttpException) {
+            } catch (e: HttpException) {
                 val msg = when (e.code()) {
-                    401 -> "Email və ya şifrə yanlışdır"
+                    401 -> ApiErrorParser.parse(e, "Email və ya şifrə yanlışdır")
                     404 -> "İstifadəçi tapılmadı"
-                    else -> "Xəta: ${e.code()}"
+                    else -> ApiErrorParser.parse(e, "Xəta: ${e.code()}")
                 }
                 _uiState.value = AuthUiState.Error(msg)
             } catch (e: Exception) {
@@ -49,20 +56,35 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(email: String, password: String, fullName: String) {
+    /**
+     * Registers the user, then immediately logs in to obtain a JWT.
+     * Backend's register response only contains a confirmation `message`,
+     * so the explicit follow-up login is required to authenticate the session.
+     */
+    fun register(name: String, surname: String, email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             try {
-                val response = agroApi.register(
-                    RegisterRequest(email = email, password = password, fullName = fullName)
+                agroApi.register(
+                    RegisterRequest(
+                        name = name.trim(),
+                        surname = surname.trim(),
+                        email = email,
+                        password = password
+                    )
                 )
-                tokenManager.saveToken(response.token)
-                tokenManager.saveUserInfo(email, fullName)
+                // Persist the full name now (login API doesn't return it).
+                tokenManager.saveUserInfo(email, "${name.trim()} ${surname.trim()}".trim())
+
+                val loginResp = agroApi.login(LoginRequest(email, password))
+                tokenManager.saveToken(loginResp.token)
+
                 _uiState.value = AuthUiState.Success
-            } catch (e: retrofit2.HttpException) {
+            } catch (e: HttpException) {
                 val msg = when (e.code()) {
-                    400 -> "Bu email artıq qeydiyyatdan keçib"
-                    else -> "Xəta: ${e.code()}"
+                    400 -> ApiErrorParser.parse(e, "Bu email artıq qeydiyyatdan keçib")
+                    409 -> "Bu email artıq qeydiyyatdan keçib"
+                    else -> ApiErrorParser.parse(e, "Xəta: ${e.code()}")
                 }
                 _uiState.value = AuthUiState.Error(msg)
             } catch (e: Exception) {

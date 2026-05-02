@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -26,36 +28,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import kotlinx.coroutines.delay
+import com.ram.agroadvisor.data.model.AnalyzeResponse
+import com.ram.agroadvisor.ui.navigation.LocalNavController
+import com.ram.agroadvisor.ui.navigation.Screen
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-enum class AnalysisState {
-    IDLE, LOADING, RESULT
-}
-
-data class DiseaseResult(
-    val diseaseName: String,
-    val severity: String,
-    val severityColor: androidx.compose.ui.graphics.Color,
-    val description: String,
-    val treatments: List<String>,
-    val prevention: List<String>
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlusScreen() {
-
-    var analysisState by remember { mutableStateOf(AnalysisState.IDLE) }
-    val onAnalysisStateChange: (AnalysisState) -> Unit = { analysisState = it }
-
     val context = LocalContext.current
+    val viewModel: AnalyzeViewModel = hiltViewModel()
+    val uiState by viewModel.state.collectAsState()
+
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showPermissionDialog by remember { mutableStateOf(false) }
-    var analysisResult by remember { mutableStateOf<DiseaseResult?>(null) }
 
     val photoFile = remember {
         File(
@@ -63,7 +53,6 @@ fun PlusScreen() {
             "photo_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.jpg"
         )
     }
-
     val photoUri = remember(photoFile) {
         FileProvider.getUriForFile(
             context,
@@ -72,39 +61,11 @@ fun PlusScreen() {
         )
     }
 
-    val mockResult = DiseaseResult(
-        diseaseName = "Late Blight (Phytophthora infestans)",
-        severity = "Moderate",
-        severityColor = androidx.compose.ui.graphics.Color(0xFFF59E0B),
-        description = "Late blight is a serious fungal disease that affects leaves, stems, and fruits. Dark brown or black lesions are visible on the leaf surface, and white mold may appear on the underside in humid conditions.",
-        treatments = listOf(
-            "Apply copper-based fungicide every 7-10 days",
-            "Remove and destroy infected plant parts immediately",
-            "Use Mancozeb or Chlorothalonil fungicide",
-            "Improve air circulation around plants"
-        ),
-        prevention = listOf(
-            "Use disease-resistant varieties",
-            "Avoid overhead irrigation",
-            "Rotate crops every 2-3 years",
-            "Maintain proper plant spacing"
-        )
-    )
-
-    LaunchedEffect(analysisState) {
-        if (analysisState == AnalysisState.LOADING) {
-            delay(2000)
-            analysisResult = mockResult
-            onAnalysisStateChange(AnalysisState.RESULT)
-        }
-    }
-
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
-        onAnalysisStateChange(AnalysisState.IDLE)
-        analysisResult = null
+        viewModel.reset()
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -112,8 +73,7 @@ fun PlusScreen() {
     ) { success ->
         if (success) {
             selectedImageUri = photoUri
-            onAnalysisStateChange(AnalysisState.IDLE)
-            analysisResult = null
+            viewModel.reset()
         }
     }
 
@@ -151,7 +111,7 @@ fun PlusScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        "Add Photo",
+                        "Bitki Analizi",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -169,181 +129,52 @@ fun PlusScreen() {
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
-            when (analysisState) {
-                AnalysisState.IDLE -> {
+            when (val state = uiState) {
+                AnalyzeViewModel.UiState.Idle -> {
                     if (selectedImageUri == null) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Add a photo to identify\nplant diseases",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 24.sp
-                            )
-                            Spacer(modifier = Modifier.height(48.dp))
-                            OptionCard(
-                                icon = Icons.Default.CameraAlt,
-                                title = "Camera",
-                                description = "Take a new photo",
-                                onClick = { launchCamera() }
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            OptionCard(
-                                icon = Icons.Default.PhotoLibrary,
-                                title = "Gallery",
-                                description = "Choose an existing photo",
-                                onClick = { galleryLauncher.launch("image/*") }
-                            )
-                            Spacer(modifier = Modifier.height(48.dp))
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = "💡 Tip",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "For better results:\n• Use good lighting\n• Take close-up shots of leaves\n• Ensure the image is clear",
-                                        fontSize = 13.sp,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        lineHeight = 20.sp
-                                    )
-                                }
-                            }
-                        }
+                        IdleNoImage(
+                            onCameraClick = ::launchCamera,
+                            onGalleryClick = { galleryLauncher.launch("image/*") }
+                        )
                     } else {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f),
-                                    shape = RoundedCornerShape(16.dp),
-                                    elevation = CardDefaults.cardElevation(4.dp)
-                                ) {
-                                    AsyncImage(
-                                        model = selectedImageUri,
-                                        contentDescription = "Selected image",
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Button(
-                                    onClick = { onAnalysisStateChange(AnalysisState.LOADING) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary
-                                    ),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text(
-                                        "Analyze Now",
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                                OutlinedButton(
-                                    onClick = {
-                                        selectedImageUri = null
-                                        onAnalysisStateChange(AnalysisState.IDLE)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text(
-                                        "Choose Another Photo",
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                            IconButton(
-                                onClick = {
-                                    selectedImageUri = null
-                                    onAnalysisStateChange(AnalysisState.IDLE)
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(24.dp)
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                            ) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "Remove",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                }
-
-                AnalysisState.LOADING -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(72.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 6.dp
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Analyzing your plant...",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "This may take a moment",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                AnalysisState.RESULT -> {
-                    analysisResult?.let { result ->
-                        AnalysisResultScreen(
+                        ImageSelected(
                             imageUri = selectedImageUri!!,
-                            result = result,
-                            onAnalyzeAgain = {
+                            onAnalyze = { viewModel.analyze(selectedImageUri!!) },
+                            onClear = {
                                 selectedImageUri = null
-                                onAnalysisStateChange(AnalysisState.IDLE)
-                                analysisResult = null
+                                viewModel.reset()
                             }
                         )
                     }
+                }
+
+                AnalyzeViewModel.UiState.Loading -> {
+                    LoadingView()
+                }
+
+                is AnalyzeViewModel.UiState.Success -> {
+                    AnalysisResultScreen(
+                        imageUri = selectedImageUri,
+                        result = state.data,
+                        onAnalyzeAgain = {
+                            selectedImageUri = null
+                            viewModel.reset()
+                        }
+                    )
+                }
+
+                is AnalyzeViewModel.UiState.Error -> {
+                    ErrorView(
+                        message = state.message,
+                        onRetry = {
+                            selectedImageUri?.let { viewModel.analyze(it) }
+                                ?: viewModel.reset()
+                        },
+                        onChangePhoto = {
+                            selectedImageUri = null
+                            viewModel.reset()
+                        }
+                    )
                 }
             }
         }
@@ -351,11 +182,238 @@ fun PlusScreen() {
 }
 
 @Composable
-fun AnalysisResultScreen(
+private fun IdleNoImage(
+    onCameraClick: () -> Unit,
+    onGalleryClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Bitki xəstəliklərini aşkar etmək üçün\nşəkil əlavə edin",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+        Spacer(modifier = Modifier.height(48.dp))
+        OptionCard(
+            icon = Icons.Default.CameraAlt,
+            title = "Kamera",
+            description = "Yeni şəkil çək",
+            onClick = onCameraClick
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        OptionCard(
+            icon = Icons.Default.PhotoLibrary,
+            title = "Qalereya",
+            description = "Mövcud şəkil seç",
+            onClick = onGalleryClick
+        )
+        Spacer(modifier = Modifier.height(48.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "💡 Məsləhət",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Daha yaxşı nəticə üçün:\n• Yaxşı işıqlandırma istifadə edin\n• Yarpaqları yaxından çəkin\n• Şəklin aydın olduğundan əmin olun",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    lineHeight = 20.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageSelected(
     imageUri: Uri,
-    result: DiseaseResult,
+    onAnalyze: () -> Unit,
+    onClear: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "Selected image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onAnalyze,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Analiz Et",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = onClear,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    "Başqa şəkil seç",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        IconButton(
+            onClick = onClear,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(24.dp)
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+        ) {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = "Remove",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingView() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(72.dp),
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = 6.dp
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Bitkiniz analiz olunur...",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Bu bir az vaxt apara bilər",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ErrorView(
+    message: String,
+    onRetry: () -> Unit,
+    onChangePhoto: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            Icons.Default.ErrorOutline,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(64.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Analiz alınmadı",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            message,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onRetry,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Refresh, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Yenidən cəhd et", fontSize = 16.sp)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onChangePhoto,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Başqa şəkil seç", fontSize = 16.sp)
+        }
+    }
+}
+
+@Composable
+fun AnalysisResultScreen(
+    imageUri: Uri?,
+    result: AnalyzeResponse,
     onAnalyzeAgain: () -> Unit
 ) {
+    val navController = LocalNavController.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -363,21 +421,24 @@ fun AnalysisResultScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            AsyncImage(
-                model = imageUri,
-                contentDescription = "Analyzed image",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+        if (imageUri != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "Analyzed image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
 
+        // Identification card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -385,6 +446,28 @@ fun AnalysisResultScreen(
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Spa,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Bitki",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = result.plantName.ifBlank { "—" },
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(20.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.BugReport,
@@ -394,153 +477,137 @@ fun AnalysisResultScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Disease Detected",
+                        text = "Xəstəlik",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = result.diseaseName,
+                    text = result.diseaseName.ifBlank { "—" },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Severity: ",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = result.severityColor.copy(alpha = 0.15f)
-                    ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                ConfidenceBar(confidence = result.confidence)
+            }
+        }
+
+        // Information card
+        if (result.information.isNotBlank()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = result.severity,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = result.severityColor,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            text = "Məlumat",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = result.information,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                        lineHeight = 22.sp
+                    )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        // Reference images
+        if (result.imageUrls.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.PhotoLibrary,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Bənzər nümunələr",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(result.imageUrls.size) { i ->
+                            Card(
+                                modifier = Modifier.size(140.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                AsyncImage(
+                                    model = result.imageUrls[i],
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // "Ask AI for more advice" — only meaningful when we actually have
+        // a disease name to seed the question with.
+        if (result.diseaseName.isNotBlank() &&
+            !result.diseaseName.equals("None identifiable", ignoreCase = true)
+        ) {
+            Button(
+                onClick = {
+                    val prefill = "Mənə bu xəstəlik haqqında daha çox məsləhət ver: ${result.diseaseName}"
+                    navController.navigate(Screen.AIAssistant.routeWithPrefill(prefill))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                )
+            ) {
+                Icon(Icons.Default.Chat, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = result.description,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    lineHeight = 20.sp
+                    "AI-dan daha çox məsləhət al",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocalHospital,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Treatment",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                result.treatments.forEachIndexed { index, treatment ->
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Surface(
-                            modifier = Modifier.size(24.dp),
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = "${index + 1}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = treatment,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                            lineHeight = 20.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            ),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Shield,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Prevention",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                result.prevention.forEach { item ->
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = item,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
-                            lineHeight = 20.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-
-        Button(
+        OutlinedButton(
             onClick = onAnalyzeAgain,
             modifier = Modifier
                 .fillMaxWidth()
@@ -550,13 +617,51 @@ fun AnalysisResultScreen(
             Icon(Icons.Default.Refresh, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Analyze Another Photo",
+                "Başqa şəkil analiz et",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ConfidenceBar(confidence: Int) {
+    val pct = confidence.coerceIn(0, 100)
+    val tint = when {
+        pct >= 75 -> Color(0xFF2E7D32)
+        pct >= 40 -> Color(0xFFF57C00)
+        else -> Color(0xFFC62828)
+    }
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Etibarlılıq",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "$pct%",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = tint
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = { pct / 100f },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            color = tint,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     }
 }
 

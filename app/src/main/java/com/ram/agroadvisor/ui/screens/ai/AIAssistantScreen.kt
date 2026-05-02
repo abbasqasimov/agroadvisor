@@ -19,29 +19,42 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ram.agroadvisor.data.ChatMessage
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.ui.navigation.LocalNavController
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
-
-data class ChatHistory(
-    val id: String,
-    val title: String,
-    val preview: String,
-    val timestamp: String,
-    val messageCount: Int
-)
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AIAssistantScreen() {
-
+fun AIAssistantScreen(
+    prefillMessage: String? = null
+) {
     val navController = LocalNavController.current
+    val viewModel: AIChatViewModel = hiltViewModel()
+
+    // If we arrived from the analysis screen, the input is pre-filled — make
+    // sure we land in a brand-new chat session so the question stands alone.
+    LaunchedEffect(prefillMessage) {
+        if (!prefillMessage.isNullOrBlank()) {
+            viewModel.startNewChat()
+        }
+    }
+
+    val messages by viewModel.messages.collectAsState()
+    val sessions by viewModel.sessions.collectAsState()
+    val state by viewModel.state.collectAsState()
+    val activeSessionId by viewModel.activeSessionId.collectAsState()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // Seed the input with any prefilled message (e.g. arriving from the
+    // analysis screen). The user reviews it and presses Send themselves.
+    var messageText by remember { mutableStateOf(prefillMessage.orEmpty()) }
+    val listState = rememberLazyListState()
 
     val suggestedQuestions = listOf(
         "What's the best time to plant wheat?",
@@ -50,53 +63,45 @@ fun AIAssistantScreen() {
         "Irrigation schedule for this week"
     )
 
-    val messages = remember { mutableStateListOf<ChatMessage>() }
-    var messageText by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
-
-    // Chat history - boş başlayır, backend hazır olanda buradan doldurulacaq
-    val chatHistories = remember { mutableStateListOf<ChatHistory>() }
-
-    // TODO: Backend hazır olanda bu funksiyalar əlavə ediləcək:
-    // - loadChatHistories() -> API-dən chat history-ləri çəkəcək
-    // - saveChatHistory(chat) -> Yeni chat-i DB-yə save edəcək
-    // - deleteChat(chatId) -> Chat-i DB-dən siləcək
-
-    LaunchedEffect(Unit) {
-        if (messages.isEmpty()) {
-            messages.add(ChatMessage("Hello! I'm your AI agricultural assistant. How can I help you today?", getCurrentTime(), true))
+    // Auto-scroll to the newest message whenever the list changes.
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
         }
     }
 
-    fun handleSend(text: String) {
-        if (text.isNotBlank()) {
-            val userText = text.trim()
-            messages.add(ChatMessage(userText, getCurrentTime(), false))
-            messageText = ""
-            coroutineScope.launch {
-                delay(100)
-                listState.animateScrollToItem(messages.size)
-                delay(1000)
-                messages.add(ChatMessage("I'm analyzing your question about '$userText'...", getCurrentTime(), true))
-                delay(100)
-                listState.animateScrollToItem(messages.size)
-            }
+    // Surface server-side errors as a transient snackbar.
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(state) {
+        (state as? AIChatViewModel.State.Error)?.let { err ->
+            snackbarHostState.showSnackbar(err.message)
+            viewModel.clearError()
         }
+    }
+
+    val isSending = state is AIChatViewModel.State.Sending
+    val isLoadingHistory = state is AIChatViewModel.State.LoadingHistory
+
+    fun handleSend(text: String) {
+        viewModel.sendMessage(text)
+        messageText = ""
     }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
-                chatHistories = chatHistories,
-                onChatClick = { scope.launch { drawerState.close() } },
-                onNewChat = {
-                    messages.clear()
-                    messages.add(ChatMessage("Hello! I'm your AI agricultural assistant. How can I help you today?", getCurrentTime(), true))
+                sessions = sessions,
+                activeSessionId = activeSessionId,
+                onSessionClick = { id ->
+                    viewModel.loadSession(id)
                     scope.launch { drawerState.close() }
                 },
-                onDeleteChat = { }
+                onNewChat = {
+                    viewModel.startNewChat()
+                    scope.launch { drawerState.close() }
+                },
+                onDeleteSession = { id -> viewModel.deleteSession(id) }
             )
         }
     ) {
@@ -104,6 +109,7 @@ fun AIAssistantScreen() {
             modifier = Modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = {
@@ -141,7 +147,7 @@ fun AIAssistantScreen() {
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "Online",
+                                        if (isSending) "Düşünür..." else "Online",
                                         fontSize = 12.sp,
                                         color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
                                     )
@@ -150,13 +156,13 @@ fun AIAssistantScreen() {
                         }
                     },
                     navigationIcon = {
-                      IconButton(onClick = {navController.popBackStack()}) {
-                          Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
-                      }
-                    },
-                    actions = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onPrimary)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -165,67 +171,117 @@ fun AIAssistantScreen() {
                 )
             },
             bottomBar = {
-                Row(
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .imePadding()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .imePadding(),
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    TextField(
-                        value = messageText,
-                        onValueChange = { messageText = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = {
-                            Text("Ask me anything about farming...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f)
-                        ),
-                        shape = RoundedCornerShape(28.dp),
-                        singleLine = true,
-                        trailingIcon = {
-                            if (messageText.isNotEmpty()) {
-                                IconButton(onClick = { messageText = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        TextField(
+                            value = messageText,
+                            onValueChange = { messageText = it },
+                            modifier = Modifier
+                                .weight(1f)
+                                // Cap how tall the field can grow before it scrolls
+                                // internally so the bubble area stays visible.
+                                .heightIn(min = 56.dp, max = 160.dp),
+                            enabled = !isSending,
+                            placeholder = {
+                                Text("Sual verin...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f)
+                            ),
+                            shape = RoundedCornerShape(28.dp),
+                            singleLine = false,
+                            maxLines = 6,
+                            trailingIcon = {
+                                if (messageText.isNotEmpty()) {
+                                    IconButton(onClick = { messageText = "" }) {
+                                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
                                 }
                             }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        FloatingActionButton(
+                            onClick = { handleSend(messageText) },
+                            containerColor = if (messageText.isBlank() || isSending)
+                                MaterialTheme.colorScheme.surfaceVariant
+                            else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(56.dp),
+                            shape = CircleShape
+                        ) {
+                            if (isSending) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
+                            }
                         }
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    FloatingActionButton(
-                        onClick = { handleSend(messageText) },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(56.dp),
-                        shape = CircleShape
-                    ) {
-                        Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
         ) { innerPadding ->
-            LazyColumn(
-                state = listState,
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding()),
-                contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding() + 16.dp, start = 16.dp, end = 16.dp, top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    // Respect BOTH the top app bar AND the bottom input bar so
+                    // the last bubble isn't hidden behind the text field.
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding()
+                    )
             ) {
-                items(messages) { msg ->
-                    MessageBubble(msg.text, msg.time, msg.isAI)
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (messages.isEmpty() && !isLoadingHistory) {
+                        item {
+                            EmptyChatGreeting()
+                        }
+                        item {
+                            SuggestedQuestionsSection(
+                                questions = suggestedQuestions,
+                                onQuestionClick = { handleSend(it) }
+                            )
+                        }
+                    } else {
+                        items(messages) { msg ->
+                            MessageBubble(
+                                text = msg.content,
+                                time = formatTime(msg.createdAtUtc),
+                                isAI = msg.role.equals("assistant", ignoreCase = true)
+                            )
+                        }
+                        if (isSending) {
+                            item { TypingIndicator() }
+                        }
+                    }
                 }
 
-                item {
-                    if (messages.size == 1) {
-                        SuggestedQuestionsSection(
-                            questions = suggestedQuestions,
-                            onQuestionClick = { handleSend(it) }
-                        )
+                if (isLoadingHistory) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -234,17 +290,105 @@ fun AIAssistantScreen() {
 }
 
 @Composable
+private fun EmptyChatGreeting() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🤖", fontSize = 40.sp)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "AgroAdvisor AI",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Kənd təsərrüfatı ilə bağlı suallarınızı verin",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun TypingIndicator() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🤖", fontSize = 20.sp)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Card(
+            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(14.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Yazır...",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun DrawerContent(
-    chatHistories: List<ChatHistory>,
-    onChatClick: () -> Unit,
+    sessions: List<String>,
+    activeSessionId: String?,
+    onSessionClick: (String) -> Unit,
     onNewChat: () -> Unit,
-    onDeleteChat: () -> Unit
+    onDeleteSession: (String) -> Unit
 ) {
     ModalDrawerSheet(
         drawerContainerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -272,13 +416,13 @@ fun DrawerContent(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                "Chat History",
+                                "Söhbətlər",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                             Text(
-                                if (chatHistories.isEmpty()) "No conversations yet" else "${chatHistories.size} conversations",
+                                if (sessions.isEmpty()) "Hələ söhbət yoxdur" else "${sessions.size} söhbət",
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onPrimary.copy(0.85f)
                             )
@@ -288,7 +432,6 @@ fun DrawerContent(
             }
 
             Column(modifier = Modifier.padding(16.dp)) {
-                // New Chat Button
                 Button(
                     onClick = onNewChat,
                     modifier = Modifier.fillMaxWidth(),
@@ -300,14 +443,12 @@ fun DrawerContent(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("New Conversation", fontWeight = FontWeight.SemiBold)
+                    Text("Yeni söhbət", fontWeight = FontWeight.SemiBold)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Chat List
-                if (chatHistories.isEmpty()) {
-                    // Boş state - hələ heç bir chat yoxdur
+                if (sessions.isEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -322,24 +463,26 @@ fun DrawerContent(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "No conversations yet",
+                            "Hələ söhbət yoxdur",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Start a new chat to begin",
+                            "Başlamaq üçün yeni söhbət yarat",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(chatHistories.size) { index ->
-                            ChatHistoryCard(
-                                chat = chatHistories[index],
-                                onClick = onChatClick
+                        items(sessions) { id ->
+                            SessionCard(
+                                sessionId = id,
+                                isActive = id == activeSessionId,
+                                onClick = { onSessionClick(id) },
+                                onDelete = { onDeleteSession(id) }
                             )
                         }
                     }
@@ -350,26 +493,35 @@ fun DrawerContent(
 }
 
 @Composable
-fun ChatHistoryCard(chat: ChatHistory, onClick: () -> Unit) {
+private fun SessionCard(
+    sessionId: String,
+    isActive: Boolean,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val shortId = sessionId.take(8)
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (isActive)
+                MaterialTheme.colorScheme.primaryContainer
+            else
+                MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
@@ -377,56 +529,31 @@ fun ChatHistoryCard(chat: ChatHistory, onClick: () -> Unit) {
                     Icons.Default.Chat,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
-
             Spacer(modifier = Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    chat.title,
-                    fontSize = 15.sp,
+                    "Söhbət #$shortId",
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    chat.preview,
-                    fontSize = 13.sp,
+                    sessionId,
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        chat.timestamp,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        "${chat.messageCount} messages",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
-
-            IconButton(onClick = { }) {
+            IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete",
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -434,7 +561,7 @@ fun ChatHistoryCard(chat: ChatHistory, onClick: () -> Unit) {
 }
 
 @Composable
-fun MessageBubble(message: String, time: String, isAI: Boolean) {
+fun MessageBubble(text: String, time: String, isAI: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isAI) Arrangement.Start else Arrangement.End
@@ -476,7 +603,7 @@ fun MessageBubble(message: String, time: String, isAI: Boolean) {
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Text(
-                    text = message,
+                    text = text,
                     fontSize = 14.sp,
                     color = if (isAI)
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -486,13 +613,15 @@ fun MessageBubble(message: String, time: String, isAI: Boolean) {
                     lineHeight = 20.sp
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = time,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
+            if (time.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = time,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
         }
     }
 }
@@ -560,4 +689,8 @@ fun SuggestedQuestionChip(question: String, onClick: (String) -> Unit) {
     }
 }
 
-fun getCurrentTime(): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+private val timeFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()).withZone(ZoneId.systemDefault())
+
+private fun formatTime(iso: String): String =
+    runCatching { timeFormatter.format(Instant.parse(iso)) }.getOrDefault("")

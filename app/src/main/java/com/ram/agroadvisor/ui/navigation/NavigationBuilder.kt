@@ -1,7 +1,9 @@
 package com.ram.agroadvisor.ui.navigation
 
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
 import com.ram.agroadvisor.ui.screens.authentication.FieldDetailsScreen
 import com.ram.agroadvisor.ui.screens.authentication.LoginScreen
@@ -37,7 +39,22 @@ fun NavGraphBuilder.navGraph(
 
     // --- FULL-SCREEN ---
     composable(Screen.Weather.route) { WeatherScreen() }
-    composable(Screen.AIAssistant.route) { AIAssistantScreen() }
+    composable(
+        route = Screen.AIAssistant.route,
+        arguments = listOf(
+            navArgument(Screen.AIAssistant.ARG_PREFILL) {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            }
+        )
+    ) { backStackEntry ->
+        val raw = backStackEntry.arguments?.getString(Screen.AIAssistant.ARG_PREFILL)
+        // The query value was URL-encoded by routeWithPrefill (spaces -> "+",
+        // unicode -> %xx). Decode it so the input field shows the human form.
+        val prefill = raw?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+        AIAssistantScreen(prefillMessage = prefill)
+    }
     composable(Screen.CropGuide.route) { CropGuideScreen() }
 
     // --- SETTINGS ---

@@ -59,7 +59,6 @@ fun LoginScreen() {
 
     fun validatePassword(p: String) = when {
         p.isBlank() -> "Şifrə tələb olunur"
-        p.length < 6 -> "Şifrə minimum 6 simvol olmalıdır"
         else -> null
     }
 

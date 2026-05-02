@@ -511,7 +511,7 @@ fun FeatureGrid() {
                 icon = Icons.Default.Chat,
                 title = "AI Assistant",
                 modifier = Modifier.weight(1f),
-                onClick = { navController.navigate(Screen.AIAssistant.route) }
+                onClick = { navController.navigate(Screen.AIAssistant.routeWithPrefill(null)) }
             )
         }
         Spacer(modifier = Modifier.height(16.dp))

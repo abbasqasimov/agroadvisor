@@ -38,14 +38,17 @@ fun SignUpScreen() {
     val uiState by authViewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
-    var fullName by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var surname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var fullNameError by remember { mutableStateOf<String?>(null) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var surnameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
-    var fullNameTouched by remember { mutableStateOf(false) }
+    var nameTouched by remember { mutableStateOf(false) }
+    var surnameTouched by remember { mutableStateOf(false) }
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
 
@@ -58,9 +61,14 @@ fun SignUpScreen() {
         }
     }
 
-    fun validateFullName(n: String) = when {
+    fun validateName(n: String) = when {
         n.isBlank() -> "Ad tələb olunur"
-        n.length < 3 -> "Ad minimum 3 simvol olmalıdır"
+        n.length < 2 -> "Ad minimum 2 simvol olmalıdır"
+        else -> null
+    }
+    fun validateSurname(s: String) = when {
+        s.isBlank() -> "Soyad tələb olunur"
+        s.length < 2 -> "Soyad minimum 2 simvol olmalıdır"
         else -> null
     }
     fun validateEmail(e: String) = when {
@@ -70,11 +78,15 @@ fun SignUpScreen() {
     }
     fun validatePassword(p: String) = when {
         p.isBlank() -> "Şifrə tələb olunur"
-        p.length < 6 -> "Şifrə minimum 6 simvol olmalıdır"
+        p.length < 8 -> "Şifrə minimum 8 simvol olmalıdır"
+        !p.any { it.isUpperCase() } -> "Ən az 1 böyük hərf olmalıdır"
+        !p.any { it.isLowerCase() } -> "Ən az 1 kiçik hərf olmalıdır"
+        !p.any { it.isDigit() } -> "Ən az 1 rəqəm olmalıdır"
         else -> null
     }
 
-    LaunchedEffect(fullName, fullNameTouched) { if (fullNameTouched) fullNameError = validateFullName(fullName) }
+    LaunchedEffect(name, nameTouched) { if (nameTouched) nameError = validateName(name) }
+    LaunchedEffect(surname, surnameTouched) { if (surnameTouched) surnameError = validateSurname(surname) }
     LaunchedEffect(email, emailTouched) { if (emailTouched) emailError = validateEmail(email) }
     LaunchedEffect(password, passwordTouched) { if (passwordTouched) passwordError = validatePassword(password) }
 
@@ -131,18 +143,36 @@ fun SignUpScreen() {
             }
 
             OutlinedTextField(
-                value = fullName,
-                onValueChange = { fullName = it; if (!fullNameTouched) fullNameTouched = true },
-                label = { Text("Ad Soyad") },
+                value = name,
+                onValueChange = { name = it; if (!nameTouched) nameTouched = true },
+                label = { Text("Ad") },
                 singleLine = true,
-                isError = fullNameError != null,
+                isError = nameError != null,
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 supportingText = {
-                    if (fullNameError != null) Text(fullNameError!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    if (nameError != null) Text(nameError!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 },
                 trailingIcon = {
-                    if (fullNameError != null) Icon(Icons.Default.Error, null, tint = MaterialTheme.colorScheme.error)
+                    if (nameError != null) Icon(Icons.Default.Error, null, tint = MaterialTheme.colorScheme.error)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = surname,
+                onValueChange = { surname = it; if (!surnameTouched) surnameTouched = true },
+                label = { Text("Soyad") },
+                singleLine = true,
+                isError = surnameError != null,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                supportingText = {
+                    if (surnameError != null) Text(surnameError!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                },
+                trailingIcon = {
+                    if (surnameError != null) Icon(Icons.Default.Error, null, tint = MaterialTheme.colorScheme.error)
                 }
             )
 
@@ -199,14 +229,18 @@ fun SignUpScreen() {
 
             Button(
                 onClick = {
-                    fullNameTouched = true
+                    nameTouched = true
+                    surnameTouched = true
                     emailTouched = true
                     passwordTouched = true
-                    fullNameError = validateFullName(fullName)
+                    nameError = validateName(name)
+                    surnameError = validateSurname(surname)
                     emailError = validateEmail(email)
                     passwordError = validatePassword(password)
-                    if (fullNameError == null && emailError == null && passwordError == null) {
-                        authViewModel.register(email, password, fullName)
+                    if (nameError == null && surnameError == null &&
+                        emailError == null && passwordError == null
+                    ) {
+                        authViewModel.register(name, surname, email, password)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
