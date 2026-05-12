@@ -60,36 +60,36 @@ fun FieldDetailsScreen() {
     // Validation functions
     fun validateFieldName(name: String): String? {
         return when {
-            name.isBlank() -> "Field name is required"
-            name.length < 3 -> "Name must be at least 3 characters"
+            name.isBlank() -> "Sahə adı tələb olunur"
+            name.length < 3 -> "Ad ən az 3 simvol olmalıdır"
             else -> null
         }
     }
 
     fun validateFieldSize(size: String): String? {
         return when {
-            size.isBlank() -> "Field size is required"
+            size.isBlank() -> "Sahə ölçüsü tələb olunur"
             else -> null
         }
     }
 
     fun validateSoilType(soil: String): String? {
         return when {
-            soil.isBlank() -> "Soil type is required"
+            soil.isBlank() -> "Torpaq növü tələb olunur"
             else -> null
         }
     }
 
     fun validateIrrigation(irrigation: String): String? {
         return when {
-            irrigation.isBlank() -> "Irrigation method is required"
+            irrigation.isBlank() -> "Suvarma üsulu tələb olunur"
             else -> null
         }
     }
 
     fun validateCrop(crop: String): String? {
         return when {
-            crop.isBlank() -> "Current crop is required"
+            crop.isBlank() -> "Cari bitki tələb olunur"
             else -> null
         }
     }
@@ -164,7 +164,7 @@ fun FieldDetailsScreen() {
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "Field Information",
+                text = "Sahə Məlumatı",
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -172,7 +172,7 @@ fun FieldDetailsScreen() {
             )
 
             Text(
-                text = "Please provide details about your farm area",
+                text = "Zəhmət olmasa təsərrüfat sahənizin təfərrüatlarını daxil edin",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -185,7 +185,7 @@ fun FieldDetailsScreen() {
                     fieldName = it
                     if (!fieldNameTouched) fieldNameTouched = true
                 },
-                label = { Text("Field Name (e.g. Lower field)") },
+                label = { Text("Sahə adı (məs. Aşağı sahə)") },
                 singleLine = true,
                 isError = fieldNameError != null,
                 enabled = !isLoading,
@@ -219,7 +219,7 @@ fun FieldDetailsScreen() {
                     fieldSize = it
                     if (!fieldSizeTouched) fieldSizeTouched = true
                 },
-                label = { Text("Field Size (e.g. 10 hectare)") },
+                label = { Text("Sahə ölçüsü (məs. 10 hektar)") },
                 singleLine = true,
                 isError = fieldSizeError != null,
                 enabled = !isLoading,
@@ -254,7 +254,7 @@ fun FieldDetailsScreen() {
                     soilType = it
                     if (!soilTypeTouched) soilTypeTouched = true
                 },
-                label = { Text("Soil Type (e.g. Clay, Sandy)") },
+                label = { Text("Torpaq növü (məs. Gilli, Qumlu)") },
                 singleLine = true,
                 isError = soilTypeError != null,
                 enabled = !isLoading,
@@ -288,7 +288,7 @@ fun FieldDetailsScreen() {
                     irrigationType = it
                     if (!irrigationTouched) irrigationTouched = true
                 },
-                label = { Text("Irrigation Method (e.g. Drip, Rain)") },
+                label = { Text("Suvarma üsulu (məs. Damcı, Yağış)") },
                 singleLine = true,
                 isError = irrigationError != null,
                 enabled = !isLoading,
@@ -322,7 +322,7 @@ fun FieldDetailsScreen() {
                     currentCrop = it
                     if (!cropTouched) cropTouched = true
                 },
-                label = { Text("Current Crop (e.g. Wheat, Tomato)") },
+                label = { Text("Cari bitki (məs. Buğda, Pomidor)") },
                 singleLine = true,
                 isError = cropError != null,
                 enabled = !isLoading,
@@ -364,7 +364,7 @@ fun FieldDetailsScreen() {
                     )
                 } else {
                     Text(
-                        "Finish Registration",
+                        "Qeydiyyatı tamamla",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -377,7 +377,7 @@ fun FieldDetailsScreen() {
                 enabled = !isLoading,
                 modifier = Modifier.padding(top = 8.dp)
             ) {
-                Text("Go Back", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Geri qayıt", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

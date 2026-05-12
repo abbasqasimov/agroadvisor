@@ -39,7 +39,7 @@ fun WelcomeScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Welcome",
+                text = "Xoş Gəldiniz",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -48,7 +48,7 @@ fun WelcomeScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Welcome to the AgroAdvisor app. Please log in or create a new account to continue.",
+                text = "AgroAdvisor tətbiqinə xoş gəldiniz. Davam etmək üçün daxil olun və ya yeni hesab yaradın.",
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                 lineHeight = 22.sp
@@ -64,7 +64,7 @@ fun WelcomeScreen() {
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(text = "Login", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
+                Text(text = "Daxil ol", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -80,7 +80,7 @@ fun WelcomeScreen() {
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                Text(text = "Sign Up", fontSize = 16.sp)
+                Text(text = "Qeydiyyat", fontSize = 16.sp)
             }
         }
     }

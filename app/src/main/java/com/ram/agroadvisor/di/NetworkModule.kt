@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val AGRO_BASE_URL = "https://agroadvisor-api-14f883.azurewebsites.net/"
+    private const val AGRO_BASE_URL = "https://agroadvisor-api-edu24a.azurewebsites.net/"
     private const val WEATHER_BASE_URL = "https://api.weatherapi.com/"
 
     @Provides

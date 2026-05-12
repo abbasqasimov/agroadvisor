@@ -37,10 +37,10 @@ private val BOTTOM_TAB_ROUTES = setOf(
 )
 
 private val BOTTOM_NAV_ITEMS = listOf(
-    BottomNavItem("Home",       Screen.Home.route,       Icons.Outlined.Home,      Icons.Filled.Home),
-    BottomNavItem("Calculator", Screen.Calculator.route, Icons.Outlined.Calculate, Icons.Filled.Calculate),
-    BottomNavItem("Analysis",   Screen.Analysis.route,   Icons.Outlined.Add,       Icons.Filled.Add),
-    BottomNavItem("Profile",    Screen.Profile.route,    Icons.Outlined.Person,    Icons.Filled.Person)
+    BottomNavItem("Əsas",       Screen.Home.route,       Icons.Outlined.Home,      Icons.Filled.Home),
+    BottomNavItem("Kalkulyator", Screen.Calculator.route, Icons.Outlined.Calculate, Icons.Filled.Calculate),
+    BottomNavItem("Analiz",     Screen.Analysis.route,   Icons.Outlined.Add,       Icons.Filled.Add),
+    BottomNavItem("Profil",     Screen.Profile.route,    Icons.Outlined.Person,    Icons.Filled.Person)
 )
 
 @Composable

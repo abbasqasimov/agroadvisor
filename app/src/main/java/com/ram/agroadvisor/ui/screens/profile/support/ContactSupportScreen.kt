@@ -24,7 +24,7 @@ fun ContactSupportScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contact Support") },
+                title = { Text("Dəstək ilə əlaqə") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -41,7 +41,7 @@ fun ContactSupportScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                "Send us a message",
+                "Bizə mesaj göndərin",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -53,8 +53,8 @@ fun ContactSupportScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
-                placeholder = { Text("Tell us how we can help...") },
-                label = { Text("Message") }
+                placeholder = { Text("Necə kömək edə biləcəyimizi bildirin...") },
+                label = { Text("Mesaj") }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -65,21 +65,21 @@ fun ContactSupportScreen() {
             ) {
                 Icon(Icons.Default.Send, null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Submit Request")
+                Text("Müraciəti göndər")
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text("Other Ways to Reach Us", fontWeight = FontWeight.Bold)
+            Text("Bizimlə əlaqə saxlamağın digər yolları", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             ListItem(
-                headlineContent = { Text("Email Support") },
+                headlineContent = { Text("E-poçt dəstəyi") },
                 supportingContent = { Text("qasimovabbas009@gmail.com") },
                 leadingContent = { Icon(Icons.Default.Email, null) }
             )
             ListItem(
-                headlineContent = { Text("Phone Support") },
+                headlineContent = { Text("Telefon dəstəyi") },
                 supportingContent = { Text("+994 60 480 9000") },
                 leadingContent = { Icon(Icons.Default.Phone, null) }
             )

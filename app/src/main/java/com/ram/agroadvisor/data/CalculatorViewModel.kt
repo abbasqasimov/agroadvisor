@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ram.agroadvisor.data.CalculatorRequest
 import com.ram.agroadvisor.data.CalculatorResponse
+import com.ram.agroadvisor.data.model.CropRequirement
+import com.ram.agroadvisor.data.model.SoilMultiplier
 import com.ram.agroadvisor.data.remote.AgroApi
 import com.ram.agroadvisor.data.remote.ApiErrorParser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,13 @@ sealed class CalculatorUiState {
     data class Error(val message: String) : CalculatorUiState()
 }
 
+/** State of the catalogue (dropdown options). Independent of the calculate result. */
+sealed class LookupsState {
+    data object Loading : LookupsState()
+    data object Ready : LookupsState()
+    data class Error(val message: String) : LookupsState()
+}
+
 @HiltViewModel
 class CalculatorViewModel @Inject constructor(
     private val agroApi: AgroApi
@@ -26,6 +35,57 @@ class CalculatorViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<CalculatorUiState>(CalculatorUiState.Idle)
     val uiState: StateFlow<CalculatorUiState> = _uiState
+
+    private val _cropRequirements = MutableStateFlow<List<CropRequirement>>(emptyList())
+    val cropRequirements: StateFlow<List<CropRequirement>> = _cropRequirements
+
+    private val _soilMultipliers = MutableStateFlow<List<SoilMultiplier>>(emptyList())
+    val soilMultipliers: StateFlow<List<SoilMultiplier>> = _soilMultipliers
+
+    private val _lookupsState = MutableStateFlow<LookupsState>(LookupsState.Loading)
+    val lookupsState: StateFlow<LookupsState> = _lookupsState
+
+    init {
+        loadLookups()
+    }
+
+    /**
+     * Fetches the supported (crop, stage) combinations and the supported soil
+     * types in parallel. Idempotent — safe to call again on a Retry button.
+     */
+    fun loadLookups() {
+        viewModelScope.launch {
+            _lookupsState.value = LookupsState.Loading
+            try {
+                val crops = agroApi.getCropRequirements()
+                val soils = agroApi.getSoilMultipliers()
+                _cropRequirements.value = crops
+                _soilMultipliers.value = soils
+                _lookupsState.value = LookupsState.Ready
+            } catch (e: retrofit2.HttpException) {
+                _lookupsState.value = LookupsState.Error(
+                    ApiErrorParser.parse(e, "Siyahılar yüklənmədi: ${e.code()}")
+                )
+            } catch (e: Exception) {
+                _lookupsState.value = LookupsState.Error(e.message ?: "Bağlantı xətası")
+            }
+        }
+    }
+
+    /** Distinct crop names from the catalogue, in the order the server returned them. */
+    fun availableCropTypes(): List<String> =
+        _cropRequirements.value.map { it.cropType }.distinct()
+
+    /** Growth stages supported for a given crop. Empty until the user picks a crop. */
+    fun growthStagesFor(cropType: String): List<String> =
+        _cropRequirements.value
+            .filter { it.cropType == cropType }
+            .map { it.growthStage }
+            .distinct()
+
+    /** Soil types from the catalogue. */
+    fun availableSoilTypes(): List<String> =
+        _soilMultipliers.value.map { it.soilType }.distinct()
 
     fun calculate(
         cropType: String,

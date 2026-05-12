@@ -124,41 +124,66 @@ class WeatherViewModel @Inject constructor(
     }
 
     fun getAgriculturalRecommendations(data: WeatherResponse): List<AgroRecommendation> {
-        val temp = data.current.temp_c
-        val rain = data.forecast.forecastday.firstOrNull()?.day?.daily_chance_of_rain ?: 0
-        val wind = data.current.wind_kph
-        val humidity = data.current.humidity
+        val current = data.current
+        val today = data.forecast.forecastday.firstOrNull()?.day
+        val tomorrow = data.forecast.forecastday.getOrNull(1)?.day
+
+        // Today / now signals.
+        val temp = current.temp_c
+        val feels = current.feelslike_c
+        val wind = current.wind_kph
+        val humidity = current.humidity
+        val uv = current.uv
+        val vis = current.vis_km
+        val cloud = current.cloud
+        val precipNow = current.precip_mm
+        val rainToday = today?.daily_chance_of_rain ?: 0
+
+        // Tomorrow signals (fall back to today where missing).
+        val rainTomorrow = tomorrow?.daily_chance_of_rain ?: rainToday
+        val minTempTomorrow = tomorrow?.mintemp_c ?: temp
+        val uvTomorrow = tomorrow?.uv ?: uv
 
         return listOf(
+            // -------- Existing recommendations, enriched with extra signals --------
             AgroRecommendation(
                 title = "Çiləmə (Pestisid)",
                 emoji = "🌿",
                 status = when {
                     wind > 20 -> AgroStatus.BAD
-                    rain > 50 -> AgroStatus.BAD
-                    temp > 35 -> AgroStatus.WARNING
+                    rainToday > 50 || precipNow > 0.2 -> AgroStatus.BAD
+                    vis < 2.0 -> AgroStatus.BAD
+                    temp > 32 || uv > 8 -> AgroStatus.WARNING
+                    rainTomorrow > 60 -> AgroStatus.WARNING
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    wind > 20 -> "Külək çox güclüdür (${wind} km/h)"
-                    rain > 50 -> "Yağış ehtimalı yüksəkdir ($rain%)"
-                    temp > 35 -> "Həddindən artıq isti, səhər tezdən edin"
-                    else -> "İdeal şərait"
+                    wind > 20 -> "Külək çox güclüdür (${wind.toInt()} km/s)"
+                    precipNow > 0.2 -> "Hazırda yağış var (${precipNow} mm)"
+                    rainToday > 50 -> "Bu gün yağış ehtimalı yüksəkdir (%${rainToday})"
+                    vis < 2.0 -> "Görmə məsafəsi azdır (${vis} km), duman/sis riski"
+                    temp > 32 -> "İsti hava (${temp.toInt()}°C), səhər tezdən etmək məsləhətdir"
+                    uv > 8 -> "UV çox yüksəkdir ($uv), pestisid tez parçalanır"
+                    rainTomorrow > 60 -> "Sabah yağış var (%${rainTomorrow}), effekt azalacaq"
+                    else -> "İdeal şərait — sakit, quru hava"
                 }
             ),
             AgroRecommendation(
                 title = "Suvarma",
                 emoji = "💧",
                 status = when {
-                    rain > 70 -> AgroStatus.BAD
-                    rain > 40 -> AgroStatus.WARNING
+                    rainToday > 70 || rainTomorrow > 80 -> AgroStatus.BAD
+                    rainToday > 40 -> AgroStatus.WARNING
                     humidity > 80 -> AgroStatus.WARNING
+                    feels >= 32 -> AgroStatus.WARNING
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    rain > 70 -> "Yağış gözlənilir, suvarma lazım deyil"
-                    rain > 40 -> "Yağış ehtimalı var, gözləyin"
-                    humidity > 80 -> "Rütubət yüksəkdir"
+                    rainToday > 70 -> "Yağış gözlənilir (%${rainToday}), suvarma lazım deyil"
+                    rainTomorrow > 80 -> "Sabah güclü yağış olacaq, suvarmanı təxirə salın"
+                    rainToday > 40 -> "Yağış ehtimalı var (%${rainToday}), gözləyin"
+                    humidity > 80 -> "Rütubət yüksəkdir (%${humidity})"
+                    feels >= 32 -> "Hissi temperatur ${feels.toInt()}°C — daha tez-tez sulayın"
                     else -> "Suvarma tövsiyə olunur"
                 }
             ),
@@ -166,15 +191,18 @@ class WeatherViewModel @Inject constructor(
                 title = "Gübrələmə",
                 emoji = "🌱",
                 status = when {
-                    rain > 60 -> AgroStatus.BAD
+                    rainToday > 60 || precipNow > 0.1 -> AgroStatus.BAD
                     wind > 25 -> AgroStatus.BAD
                     temp < 5 -> AgroStatus.BAD
+                    rainTomorrow in 30..60 -> AgroStatus.WARNING
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    rain > 60 -> "Yağış gübrəni yuyacaq"
-                    wind > 25 -> "Külək gübrəni sovuracaq"
-                    temp < 5 -> "Soyuqda bitki gübrəni mənimsəmir"
+                    precipNow > 0.1 -> "Hazırda yağır — gübrə yuyulacaq"
+                    rainToday > 60 -> "Yağış gübrəni yuyacaq (%${rainToday})"
+                    wind > 25 -> "Külək (${wind.toInt()} km/s) gübrəni sovuracaq"
+                    temp < 5 -> "Soyuqda (${temp.toInt()}°C) bitki gübrəni mənimsəmir"
+                    rainTomorrow in 30..60 -> "Sabah qismən yağış var, gübrəni torpağa qarışdırın"
                     else -> "Gübrələmə üçün uyğun gün"
                 }
             ),
@@ -182,31 +210,38 @@ class WeatherViewModel @Inject constructor(
                 title = "Məhsul Yığımı",
                 emoji = "🌾",
                 status = when {
-                    rain > 50 -> AgroStatus.BAD
+                    rainToday > 50 || precipNow > 0.1 -> AgroStatus.BAD
+                    rainTomorrow > 70 -> AgroStatus.WARNING
                     wind > 30 -> AgroStatus.WARNING
+                    humidity > 85 -> AgroStatus.WARNING
                     temp in 15.0..30.0 -> AgroStatus.GOOD
                     else -> AgroStatus.WARNING
                 },
                 reason = when {
-                    rain > 50 -> "Yağışlı havada yığım olmaz"
-                    wind > 30 -> "Güclü külək var, diqqətli olun"
-                    temp in 15.0..30.0 -> "İdeal temperatur"
-                    else -> "Temperatur optimal deyil"
+                    precipNow > 0.1 -> "Hazırda yağır, yığımı dayandırın"
+                    rainToday > 50 -> "Yağışlı havada yığım olmaz (%${rainToday})"
+                    rainTomorrow > 70 -> "Sabah yağış var — bu gün yığmağa çalışın"
+                    wind > 30 -> "Güclü külək (${wind.toInt()} km/s), diqqətli olun"
+                    humidity > 85 -> "Rütubət %${humidity} — məhsulu yaxşı qurudun"
+                    temp in 15.0..30.0 -> "İdeal temperatur (${temp.toInt()}°C)"
+                    else -> "Temperatur optimal deyil (${temp.toInt()}°C)"
                 }
             ),
             AgroRecommendation(
                 title = "Şum / Torpaq işləri",
                 emoji = "🚜",
                 status = when {
-                    rain > 60 -> AgroStatus.BAD
+                    rainToday > 60 || precipNow > 0.1 -> AgroStatus.BAD
+                    temp < 0 || minTempTomorrow < -2 -> AgroStatus.BAD
                     humidity > 85 -> AgroStatus.WARNING
-                    temp < 0 -> AgroStatus.BAD
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    rain > 60 -> "Torpaq çox yaş olacaq"
-                    humidity > 85 -> "Torpaq nəmdir, çətin işlənər"
-                    temp < 0 -> "Torpaq donmuşdur"
+                    precipNow > 0.1 -> "Yağış davam edir, torpaq çox yaş"
+                    rainToday > 60 -> "Torpaq çox yaş olacaq (%${rainToday})"
+                    temp < 0 -> "Torpaq donmuşdur (${temp.toInt()}°C)"
+                    minTempTomorrow < -2 -> "Sabah şaxta gözlənilir (${minTempTomorrow.toInt()}°C)"
+                    humidity > 85 -> "Torpaq nəmdir (%${humidity}), çətin işlənər"
                     else -> "Torpaq işləri üçün uyğundur"
                 }
             ),
@@ -214,15 +249,16 @@ class WeatherViewModel @Inject constructor(
                 title = "Budama",
                 emoji = "✂️",
                 status = when {
-                    rain > 40 -> AgroStatus.WARNING
-                    wind > 20 -> AgroStatus.WARNING
                     temp < 0 -> AgroStatus.BAD
+                    rainToday > 40 || humidity > 85 -> AgroStatus.WARNING
+                    wind > 20 -> AgroStatus.WARNING
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    rain > 40 -> "Rütubətli havada xəstəlik riski"
-                    wind > 20 -> "Külək var, diqqətli olun"
-                    temp < 0 -> "Şaxtada budama olmaz"
+                    temp < 0 -> "Şaxtada (${temp.toInt()}°C) budama olmaz"
+                    rainToday > 40 -> "Rütubətli havada xəstəlik riski (%${rainToday})"
+                    humidity > 85 -> "Rütubət %${humidity} — yaralar gec sağalır"
+                    wind > 20 -> "Külək var (${wind.toInt()} km/s), diqqətli olun"
                     else -> "Budama üçün ideal şərait"
                 }
             ),
@@ -230,16 +266,92 @@ class WeatherViewModel @Inject constructor(
                 title = "Toxum Səpini",
                 emoji = "🌰",
                 status = when {
-                    temp < 8 -> AgroStatus.BAD
+                    temp < 8 || minTempTomorrow < 5 -> AgroStatus.BAD
                     temp > 35 -> AgroStatus.BAD
-                    rain > 70 -> AgroStatus.WARNING
+                    rainToday > 70 -> AgroStatus.WARNING
                     else -> AgroStatus.GOOD
                 },
                 reason = when {
-                    temp < 8 -> "Temperatur çox aşağıdır ($temp°C)"
-                    temp > 35 -> "Temperatur çox yüksəkdir ($temp°C)"
-                    rain > 70 -> "Çox yağış gözlənilir"
+                    temp < 8 -> "Temperatur çox aşağıdır (${temp.toInt()}°C)"
+                    minTempTomorrow < 5 -> "Sabah gecə soyuyacaq (${minTempTomorrow.toInt()}°C)"
+                    temp > 35 -> "Temperatur çox yüksəkdir (${temp.toInt()}°C)"
+                    rainToday > 70 -> "Çox yağış gözlənilir (%${rainToday})"
                     else -> "Səpin üçün uyğun şərait"
+                }
+            ),
+
+            // -------- New recommendations powered by previously-ignored fields --------
+            AgroRecommendation(
+                title = "UV Qoruma",
+                emoji = "☀️",
+                status = when {
+                    uv >= 11 || uvTomorrow >= 11 -> AgroStatus.BAD
+                    uv >= 8 -> AgroStatus.WARNING
+                    uv >= 6 -> AgroStatus.WARNING
+                    else -> AgroStatus.GOOD
+                },
+                reason = when {
+                    uv >= 11 -> "Ekstrem UV ($uv) — meyvə günəş yanığı riski"
+                    uvTomorrow >= 11 -> "Sabah ekstrem UV gözlənilir ($uvTomorrow)"
+                    uv >= 8 -> "Çox yüksək UV ($uv) — gənc bitkiləri kölgələyin"
+                    uv >= 6 -> "Yüksək UV ($uv) — işçilər papaq taxsın"
+                    else -> "UV təhlükəsizdir ($uv)"
+                }
+            ),
+            AgroRecommendation(
+                title = "Don Riski (Sabah)",
+                emoji = "❄️",
+                status = when {
+                    minTempTomorrow <= -2 -> AgroStatus.BAD
+                    minTempTomorrow <= 2 -> AgroStatus.WARNING
+                    else -> AgroStatus.GOOD
+                },
+                reason = when {
+                    minTempTomorrow <= -2 ->
+                        "Sabah gecə ${minTempTomorrow.toInt()}°C — həssas bitkiləri örtün"
+                    minTempTomorrow <= 2 ->
+                        "Sabah gecə ${minTempTomorrow.toInt()}°C — yüngül don ehtimalı"
+                    else -> "Don riski yoxdur (min ${minTempTomorrow.toInt()}°C)"
+                }
+            ),
+            AgroRecommendation(
+                title = "İstilik Stresi",
+                emoji = "🥵",
+                status = when {
+                    feels >= 38 -> AgroStatus.BAD
+                    feels >= 32 && humidity >= 60 -> AgroStatus.BAD
+                    feels >= 30 -> AgroStatus.WARNING
+                    else -> AgroStatus.GOOD
+                },
+                reason = when {
+                    feels >= 38 ->
+                        "Hissi temperatur ${feels.toInt()}°C — bitki və işçilər üçün təhlükəli"
+                    feels >= 32 && humidity >= 60 ->
+                        "${feels.toInt()}°C + %${humidity} rütubət — yüksək stres"
+                    feels >= 30 ->
+                        "${feels.toInt()}°C — bitkiləri sulayın, kölgə təmin edin"
+                    else -> "Temperatur rahatdır (${feels.toInt()}°C)"
+                }
+            ),
+            AgroRecommendation(
+                title = "Açıq Hava işləri",
+                emoji = "👨‍🌾",
+                status = when {
+                    vis < 1.0 -> AgroStatus.BAD
+                    vis < 3.0 -> AgroStatus.WARNING
+                    wind > 40 -> AgroStatus.BAD
+                    feels < -5 || feels >= 38 -> AgroStatus.BAD
+                    cloud < 20 && uv >= 8 -> AgroStatus.WARNING
+                    else -> AgroStatus.GOOD
+                },
+                reason = when {
+                    vis < 1.0 -> "Görmə məsafəsi çox azdır (${vis} km)"
+                    vis < 3.0 -> "Duman var (${vis} km) — diqqətli olun"
+                    wind > 40 -> "Fırtına küləyi (${wind.toInt()} km/s)"
+                    feels < -5 -> "Şaxta (${feels.toInt()}°C) — işi qısa saxlayın"
+                    feels >= 38 -> "İsti vurma riski (${feels.toInt()}°C)"
+                    cloud < 20 && uv >= 8 -> "Buludsuz və UV $uv — uzun müddət açıqda olmayın"
+                    else -> "Sahə işləri üçün rahat şərait"
                 }
             )
         )

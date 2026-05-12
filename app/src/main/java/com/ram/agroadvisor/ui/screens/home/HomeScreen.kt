@@ -118,7 +118,7 @@ fun HomeScreen() {
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Text(
-                            "Your Smart Farming Assistant",
+                            "Ağıllı Kənd Təsərrüfatı Köməkçiniz",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                         )
@@ -145,7 +145,7 @@ fun HomeScreen() {
                             ) {
                                 Icon(
                                     Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
+                                    contentDescription = "Bildirişlər",
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
@@ -263,16 +263,6 @@ fun HomeScreen() {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CropCalendarSection()
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FeaturedArticleSection()
-                }
-
-                item {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -360,28 +350,106 @@ fun LocalNotificationItem(notification: LocalNotification) {
 
 @Composable
 fun AgroRecommendationsSection(recommendations: List<AgroRecommendation>) {
+    val goodCount = recommendations.count { it.status == AgroStatus.GOOD }
+    val warnCount = recommendations.count { it.status == AgroStatus.WARNING }
+    val badCount = recommendations.count { it.status == AgroStatus.BAD }
+
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Column {
+                Text(
+                    "Bugünkü Tövsiyələr",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    "${recommendations.size} sahə üçün hava əsaslı təhlil",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                "Bugünkü Tövsiyələr",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                "🌤️ Hava əsasında",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                "🌤️",
+                fontSize = 24.sp
             )
         }
+
         Spacer(modifier = Modifier.height(12.dp))
+
+        // At-a-glance summary chip row.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            StatusSummaryChip(
+                count = goodCount,
+                label = "Uyğun",
+                color = Color(0xFF2E7D32),
+                bgColor = Color(0xFFE8F5E9),
+                modifier = Modifier.weight(1f)
+            )
+            StatusSummaryChip(
+                count = warnCount,
+                label = "Diqqət",
+                color = Color(0xFFF57F17),
+                bgColor = Color(0xFFFFF8E1),
+                modifier = Modifier.weight(1f)
+            )
+            StatusSummaryChip(
+                count = badCount,
+                label = "Riskli",
+                color = Color(0xFFC62828),
+                bgColor = Color(0xFFFFEBEE),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         recommendations.forEach { rec ->
             AgroRecommendationCard(recommendation = rec)
             Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun StatusSummaryChip(
+    count: Int,
+    label: String,
+    color: Color,
+    bgColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                count.toString(),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+            Text(
+                label,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = color.copy(alpha = 0.85f)
+            )
         }
     }
 }
@@ -509,7 +577,7 @@ fun FeatureGrid() {
         ) {
             FeatureCard(
                 icon = Icons.Default.Chat,
-                title = "AI Assistant",
+                title = "AI Köməkçi",
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate(Screen.AIAssistant.routeWithPrefill(null)) }
             )
@@ -521,7 +589,7 @@ fun FeatureGrid() {
         ) {
             FeatureCard(
                 icon = Icons.Default.Eco,
-                title = "Crop Guide",
+                title = "Bitki Bələdçisi",
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate(Screen.CropGuide.route) }
             )
@@ -576,106 +644,3 @@ fun FeatureCard(
     }
 }
 
-@Composable
-fun CropCalendarSection() {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Crop Calendar", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-            IconButton(onClick = { }) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        CropCalendarCard(cropName = "Wheat", description = "Harvest in 15 days")
-        Spacer(modifier = Modifier.height(12.dp))
-        CropCalendarCard(cropName = "Tomatoes", description = "Fertilize today", icon = Icons.Default.LocalFlorist)
-    }
-}
-
-@Composable
-fun CropCalendarCard(
-    cropName: String,
-    description: String,
-    icon: ImageVector = Icons.Default.Eco
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(32.dp))
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(cropName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Icon(Icons.Default.ChevronRight, contentDescription = "Details", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-fun FeaturedArticleSection() {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text("Featured Article", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Spacer(modifier = Modifier.height(12.dp))
-        FeaturedArticleCard(
-            title = "Smart Farming Technology in 2026",
-            description = "Discover how AI and IoT are revolutionizing agriculture and increasing crop yields.",
-            readMoreText = "Read More"
-        )
-    }
-}
-
-@Composable
-fun FeaturedArticleCard(title: String, description: String, readMoreText: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-            )
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 28.sp)
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { }
-                ) {
-                    Text(readMoreText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
-    }
-}

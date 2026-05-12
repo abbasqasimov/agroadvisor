@@ -87,7 +87,7 @@ fun ProfileScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        "Profile",
+                        "Profil",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -244,11 +244,11 @@ fun SettingsSection(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Text("Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
-            SettingItem(icon = Icons.Outlined.Settings, title = "Account Settings", onClick = onAccountSettingsClick)
-            SettingItem(icon = Icons.Outlined.Notifications, title = "Notifications", onClick = onNotificationsClick)
-            SettingItem(icon = Icons.Outlined.DarkMode, title = "Appearance", onClick = onAppearanceClick)
-            SettingItem(icon = Icons.Outlined.Shield, title = "Privacy & Security", onClick = onPrivacySecurityClick, showDivider = false)
+            Text("Tənzimləmələr", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            SettingItem(icon = Icons.Outlined.Settings, title = "Hesab Parametrləri", onClick = onAccountSettingsClick)
+            SettingItem(icon = Icons.Outlined.Notifications, title = "Bildirişlər", onClick = onNotificationsClick)
+            SettingItem(icon = Icons.Outlined.DarkMode, title = "Görünüş", onClick = onAppearanceClick)
+            SettingItem(icon = Icons.Outlined.Shield, title = "Məxfilik və Təhlükəsizlik", onClick = onPrivacySecurityClick, showDivider = false)
         }
     }
 }
@@ -265,9 +265,9 @@ fun SupportSection(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            Text("Support", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
-            SettingItem(icon = Icons.Outlined.HelpOutline, title = "Help Center", onClick = onHelpCenterClick)
-            SettingItem(icon = Icons.Outlined.Phone, title = "Contact Support", onClick = onContactSupportClick, showDivider = false)
+            Text("Dəstək", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+            SettingItem(icon = Icons.Outlined.HelpOutline, title = "Yardım Mərkəzi", onClick = onHelpCenterClick)
+            SettingItem(icon = Icons.Outlined.Phone, title = "Dəstək ilə əlaqə", onClick = onContactSupportClick, showDivider = false)
         }
     }
 }
@@ -310,7 +310,7 @@ fun LogoutButton(onClick: () -> Unit = {}) {
         ) {
             Icon(Icons.Default.Logout, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Logout", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
+            Text("Çıxış", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
         }
     }
 }

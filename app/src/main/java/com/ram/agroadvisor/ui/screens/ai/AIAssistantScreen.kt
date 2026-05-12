@@ -57,10 +57,10 @@ fun AIAssistantScreen(
     val listState = rememberLazyListState()
 
     val suggestedQuestions = listOf(
-        "What's the best time to plant wheat?",
-        "How do I treat crop diseases?",
-        "Check current market prices",
-        "Irrigation schedule for this week"
+        "Buğdanı əkmək üçün ən yaxşı vaxt nə vaxtdır?",
+        "Bitki xəstəliklərini necə müalicə edə bilərəm?",
+        "Cari bazar qiymətlərini yoxla",
+        "Bu həftə üçün suvarma cədvəli"
     )
 
     // Auto-scroll to the newest message whenever the list changes.
@@ -133,7 +133,7 @@ fun AIAssistantScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    "AI Assistant",
+                                    "AI Köməkçi",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary
@@ -147,7 +147,7 @@ fun AIAssistantScreen(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        if (isSending) "Düşünür..." else "Online",
+                                        if (isSending) "Düşünür..." else "Onlayn",
                                         fontSize = 12.sp,
                                         color = MaterialTheme.colorScheme.onPrimary.copy(0.8f)
                                     )
@@ -641,7 +641,7 @@ fun SuggestedQuestionsSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Suggested Questions",
+                "Təklif olunan suallar",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.SemiBold

@@ -96,11 +96,11 @@ fun PlusScreen() {
     if (showPermissionDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
-            title = { Text("Camera Permission") },
-            text = { Text("Camera permission is required to take photos. You can enable it in the settings.") },
+            title = { Text("Kamera icazəsi") },
+            text = { Text("Şəkil çəkmək üçün kamera icazəsi tələb olunur. Onu parametrlərdən aktivləşdirə bilərsiniz.") },
             confirmButton = {
                 TextButton(onClick = { showPermissionDialog = false }) {
-                    Text("Close")
+                    Text("Bağla")
                 }
             }
         )

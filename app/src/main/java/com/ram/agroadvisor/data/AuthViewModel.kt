@@ -45,7 +45,7 @@ class AuthViewModel @Inject constructor(
                 _uiState.value = AuthUiState.Success
             } catch (e: HttpException) {
                 val msg = when (e.code()) {
-                    401 -> ApiErrorParser.parse(e, "Email və ya şifrə yanlışdır")
+                    401 -> ApiErrorParser.parse(e, "E-poçt və ya şifrə yanlışdır")
                     404 -> "İstifadəçi tapılmadı"
                     else -> ApiErrorParser.parse(e, "Xəta: ${e.code()}")
                 }
@@ -82,8 +82,8 @@ class AuthViewModel @Inject constructor(
                 _uiState.value = AuthUiState.Success
             } catch (e: HttpException) {
                 val msg = when (e.code()) {
-                    400 -> ApiErrorParser.parse(e, "Bu email artıq qeydiyyatdan keçib")
-                    409 -> "Bu email artıq qeydiyyatdan keçib"
+                    400 -> ApiErrorParser.parse(e, "Bu e-poçt artıq qeydiyyatdan keçib")
+                    409 -> "Bu e-poçt artıq qeydiyyatdan keçib"
                     else -> ApiErrorParser.parse(e, "Xəta: ${e.code()}")
                 }
                 _uiState.value = AuthUiState.Error(msg)

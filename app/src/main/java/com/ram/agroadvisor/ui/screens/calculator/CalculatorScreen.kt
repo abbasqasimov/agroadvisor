@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ram.agroadvisor.data.CalculatorResponse
 import com.ram.agroadvisor.ui.screens.resources.CalculatorUiState
 import com.ram.agroadvisor.ui.screens.resources.CalculatorViewModel
+import com.ram.agroadvisor.ui.screens.resources.LookupsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,6 +169,11 @@ private fun CalculatorForm(
     onBack: () -> Unit
 ) {
     val uiState by calculatorViewModel.uiState.collectAsState()
+    val lookupsState by calculatorViewModel.lookupsState.collectAsState()
+    // collectAsState on these isn't strictly needed since we read through the
+    // helper methods, but doing so makes the UI recompose when they arrive.
+    val cropRequirements by calculatorViewModel.cropRequirements.collectAsState()
+    val soilMultipliers by calculatorViewModel.soilMultipliers.collectAsState()
 
     var cropType by remember { mutableStateOf("") }
     var growthStage by remember { mutableStateOf("") }
@@ -178,9 +184,25 @@ private fun CalculatorForm(
     var growthStageExpanded by remember { mutableStateOf(false) }
     var soilTypeExpanded by remember { mutableStateOf(false) }
 
-    val cropTypes = listOf("Buğda", "Qarğıdalı", "Pomidor")
-    val growthStages = listOf("Cücərti", "Sünbülləmə", "Vegetativ", "Saçaqlanma", "Meyvə Bağlama")
-    val soilTypes = listOf("Gillicəli", "Qumlu", "Gil")
+    // Catalogue-driven dropdown options. Growth stages are filtered by the
+    // currently-selected crop so the user can never submit an unsupported pair.
+    val cropTypes = remember(cropRequirements) {
+        cropRequirements.map { it.cropType }.distinct()
+    }
+    val growthStages = remember(cropRequirements, cropType) {
+        if (cropType.isBlank()) emptyList()
+        else cropRequirements.filter { it.cropType == cropType }.map { it.growthStage }.distinct()
+    }
+    val soilTypes = remember(soilMultipliers) {
+        soilMultipliers.map { it.soilType }.distinct()
+    }
+
+    // If the selected stage is no longer valid for the newly-picked crop, clear it.
+    LaunchedEffect(cropType, growthStages) {
+        if (growthStage.isNotBlank() && growthStage !in growthStages) {
+            growthStage = ""
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -248,6 +270,70 @@ private fun CalculatorForm(
                 }
             }
 
+            // Catalogue load status — only renders when not Ready.
+            when (val ls = lookupsState) {
+                is LookupsState.Loading -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Siyahılar yüklənir...",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                is LookupsState.Error -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC62828)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    ls.message,
+                                    color = Color(0xFFC62828),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedButton(
+                                onClick = { calculatorViewModel.loadLookups() },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Yenidən cəhd et")
+                            }
+                        }
+                    }
+                }
+                is LookupsState.Ready -> Unit
+                else -> {}
+            }
+
             // Input card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -300,16 +386,26 @@ private fun CalculatorForm(
                         }
                     }
 
-                    // Böyümə mərhələsi
+                    // Böyümə mərhələsi — bağlıdır until a crop is picked, since
+                    // the catalogue defines stages per-crop.
+                    val growthStageEnabled = cropType.isNotBlank() && growthStages.isNotEmpty()
                     ExposedDropdownMenuBox(
-                        expanded = growthStageExpanded,
-                        onExpandedChange = { growthStageExpanded = it }
+                        expanded = growthStageExpanded && growthStageEnabled,
+                        onExpandedChange = {
+                            if (growthStageEnabled) growthStageExpanded = it
+                        }
                     ) {
                         OutlinedTextField(
                             value = growthStage,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Böyümə mərhələsi") },
+                            enabled = growthStageEnabled,
+                            label = {
+                                Text(
+                                    if (growthStageEnabled) "Böyümə mərhələsi"
+                                    else "Böyümə mərhələsi (əvvəlcə bitki seçin)"
+                                )
+                            },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = growthStageExpanded)
                             },
@@ -319,7 +415,7 @@ private fun CalculatorForm(
                             shape = RoundedCornerShape(12.dp)
                         )
                         ExposedDropdownMenu(
-                            expanded = growthStageExpanded,
+                            expanded = growthStageExpanded && growthStageEnabled,
                             onDismissRequest = { growthStageExpanded = false }
                         ) {
                             growthStages.forEach { option ->

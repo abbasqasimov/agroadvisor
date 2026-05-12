@@ -21,3 +21,9 @@ data class AuthResponse(
 data class MessageResponse(
     val message: String?
 )
+
+data class UpdatePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String,
+    val confirmNewPassword: String
+)

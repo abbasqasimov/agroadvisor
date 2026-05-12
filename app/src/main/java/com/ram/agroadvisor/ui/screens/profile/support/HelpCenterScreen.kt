@@ -23,16 +23,16 @@ import com.ram.agroadvisor.ui.navigation.LocalNavController
 fun HelpCenterScreen() {
     val navController = LocalNavController.current
     val faqs = listOf(
-        "How to track crop growth?" to "Navigate to the My Crops section and select your specific field to see real-time updates.",
-        "How to use the AI Assistant?" to "Click the robot icon in the menu to ask questions about soil, weather, or crop diseases.",
-        "Updating location?" to "Go to Account Settings > Profile to update your current farming region.",
-        "Is my data secure?" to "Yes, AgroAdvisor uses industry-standard encryption to protect your farm data."
+        "Bitki inkişafını necə izləmək olar?" to "Bitkilərim bölməsinə keçin və real vaxt yeniləmələrini görmək üçün konkret sahənizi seçin.",
+        "AI Köməkçidən necə istifadə etmək olar?" to "Torpaq, hava və ya bitki xəstəlikləri haqqında sual vermək üçün menyudakı robot ikonasına basın.",
+        "Məkanı necə yeniləmək olar?" to "Cari kənd təsərrüfatı regionunuzu yeniləmək üçün Hesab Parametrləri > Profilə keçin.",
+        "Məlumatlarım təhlükəsizdirmi?" to "Bəli, AgroAdvisor təsərrüfat məlumatlarınızı qorumaq üçün sənaye standartı şifrələmədən istifadə edir."
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Help Center") },
+                title = { Text("Yardım Mərkəzi") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -51,7 +51,7 @@ fun HelpCenterScreen() {
         ) {
             item {
                 Text(
-                    "Frequently Asked Questions",
+                    "Tez-tez verilən suallar",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)

@@ -131,7 +131,7 @@ fun WeatherScreen() {
             } else {
                 TopAppBar(
                     title = {
-                        Text("Weather", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Hava", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {

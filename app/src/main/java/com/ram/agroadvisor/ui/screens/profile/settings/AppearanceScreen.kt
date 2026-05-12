@@ -29,7 +29,7 @@ fun AppearanceScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Appearance",
+                        "Görünüş",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -60,7 +60,7 @@ fun AppearanceScreen(
         ) {
             // Header description
             Text(
-                text = "Choose how AgroAdvisor looks on your device",
+                text = "AgroAdvisor-un cihazınızda necə görünəcəyini seçin",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -69,24 +69,24 @@ fun AppearanceScreen(
             // Theme options
             ThemeOptionCard(
                 icon = Icons.Default.LightMode,
-                title = "Light Mode",
-                description = "Bright and clear interface",
+                title = "İşıqlı rejim",
+                description = "Parlaq və aydın interfeys",
                 isSelected = themeMode == ThemeMode.LIGHT,
                 onClick = { onThemeChange(ThemeMode.LIGHT) }
             )
 
             ThemeOptionCard(
                 icon = Icons.Default.DarkMode,
-                title = "Dark Mode",
-                description = "Easy on the eyes in low light",
+                title = "Qaranlıq rejim",
+                description = "Az işıqda gözə rahatdır",
                 isSelected = themeMode == ThemeMode.DARK,
                 onClick = { onThemeChange(ThemeMode.DARK) }
             )
 
             ThemeOptionCard(
                 icon = Icons.Default.PhoneAndroid,
-                title = "System Default",
-                description = "Follows your device settings",
+                title = "Sistem standartı",
+                description = "Cihazınızın parametrlərini izləyir",
                 isSelected = themeMode == ThemeMode.SYSTEM,
                 onClick = { onThemeChange(ThemeMode.SYSTEM) }
             )
@@ -95,7 +95,7 @@ fun AppearanceScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Preview",
+                text = "Önbaxış",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -212,7 +212,7 @@ fun PreviewCard() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "This is how your app will look",
+                text = "Tətbiqiniz belə görünəcək",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )

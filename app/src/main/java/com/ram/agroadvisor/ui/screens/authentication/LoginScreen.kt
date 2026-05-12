@@ -52,8 +52,8 @@ fun LoginScreen() {
     }
 
     fun validateEmail(e: String) = when {
-        e.isBlank() -> "Email tələb olunur"
-        !android.util.Patterns.EMAIL_ADDRESS.matcher(e).matches() -> "Yanlış email formatı"
+        e.isBlank() -> "E-poçt tələb olunur"
+        !android.util.Patterns.EMAIL_ADDRESS.matcher(e).matches() -> "Yanlış e-poçt formatı"
         else -> null
     }
 
@@ -125,7 +125,7 @@ fun LoginScreen() {
                     email = it
                     if (!emailTouched) emailTouched = true
                 },
-                label = { Text("Email") },
+                label = { Text("E-poçt") },
                 singleLine = true,
                 isError = emailError != null,
                 enabled = !isLoading,

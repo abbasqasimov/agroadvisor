@@ -7,9 +7,12 @@ import com.ram.agroadvisor.data.model.AuthResponse
 import com.ram.agroadvisor.data.model.ChatMessageDto
 import com.ram.agroadvisor.data.model.ChatRequestDto
 import com.ram.agroadvisor.data.model.ChatResponseDto
+import com.ram.agroadvisor.data.model.CropRequirement
 import com.ram.agroadvisor.data.model.LoginRequest
 import com.ram.agroadvisor.data.model.MessageResponse
 import com.ram.agroadvisor.data.model.RegisterRequest
+import com.ram.agroadvisor.data.model.SoilMultiplier
+import com.ram.agroadvisor.data.model.UpdatePasswordRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -17,6 +20,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
@@ -29,9 +33,20 @@ interface AgroApi {
     @POST("api/Auth/login")
     suspend fun login(@Body request: LoginRequest): AuthResponse
 
+    @PUT("api/Auth/update-password")
+    suspend fun updatePassword(@Body request: UpdatePasswordRequest): MessageResponse
+
     // ---- Calculator ----
     @POST("api/Calculator/calculate")
     suspend fun calculate(@Body request: CalculatorRequest): CalculatorResponse
+
+    /** Catalogue of supported (crop, growth stage) combinations. */
+    @GET("api/CropRequirements")
+    suspend fun getCropRequirements(): List<CropRequirement>
+
+    /** Catalogue of supported soil types. */
+    @GET("api/SoilMultipliers")
+    suspend fun getSoilMultipliers(): List<SoilMultiplier>
 
     // ---- Chat ----
     @POST("api/Chat")

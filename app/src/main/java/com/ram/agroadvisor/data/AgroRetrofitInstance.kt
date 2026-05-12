@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object AgroRetrofitInstance {
     val api: AgroApi by lazy {
         Retrofit.Builder()
-            .baseUrl("https://agroadvisor-api-14f883.azurewebsites.net/")
+            .baseUrl("https://agroadvisor-api-edu24a.azurewebsites.net/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(AgroApi::class.java)
