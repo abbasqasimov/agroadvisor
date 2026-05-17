@@ -22,10 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ram.agroadvisor.data.CalculatorResponse
-import com.ram.agroadvisor.ui.screens.resources.CalculatorUiState
-import com.ram.agroadvisor.ui.screens.resources.CalculatorViewModel
-import com.ram.agroadvisor.ui.screens.resources.LookupsState
+import com.ram.agroadvisor.data.model.CalculatorResponse
+import com.ram.agroadvisor.ui.common.dismissKeyboardOnTap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -205,6 +203,9 @@ private fun CalculatorForm(
     }
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .dismissKeyboardOnTap(),
         topBar = {
             TopAppBar(
                 title = {

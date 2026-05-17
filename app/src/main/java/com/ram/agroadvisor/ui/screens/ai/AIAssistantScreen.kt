@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.common.dismissKeyboardOnTap
 import com.ram.agroadvisor.ui.navigation.LocalNavController
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -106,7 +107,9 @@ fun AIAssistantScreen(
         }
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .dismissKeyboardOnTap(),
             containerColor = MaterialTheme.colorScheme.background,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(snackbarHostState) },

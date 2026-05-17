@@ -5,7 +5,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ram.agroadvisor.ui.screens.ai.AIAssistantScreen
-import com.ram.agroadvisor.ui.screens.authentication.FieldDetailsScreen
 import com.ram.agroadvisor.ui.screens.authentication.LoginScreen
 import com.ram.agroadvisor.ui.screens.authentication.SignUpScreen
 import com.ram.agroadvisor.ui.screens.authentication.WelcomeScreen
@@ -13,12 +12,13 @@ import com.ram.agroadvisor.ui.screens.calculator.CalculatorScreen
 import com.ram.agroadvisor.ui.screens.home.HomeScreen
 import com.ram.agroadvisor.ui.screens.home.WeatherScreen
 import com.ram.agroadvisor.ui.screens.plus.PlusScreen
-import com.ram.agroadvisor.ui.screens.profile.ContactSupportScreen
-import com.ram.agroadvisor.ui.screens.profile.HelpCenterScreen
+import com.ram.agroadvisor.ui.screens.cropguide.CropGuideScreen
 import com.ram.agroadvisor.ui.screens.profile.ProfileScreen
 import com.ram.agroadvisor.ui.screens.profile.settings.AccountSettingsScreen
 import com.ram.agroadvisor.ui.screens.profile.settings.AppearanceScreen
-import com.ram.agroadvisor.ui.screens.resources.CropGuideScreen
+import com.ram.agroadvisor.ui.screens.profile.settings.PrivacySecurityScreen
+import com.ram.agroadvisor.ui.screens.profile.support.ContactSupportScreen
+import com.ram.agroadvisor.ui.screens.profile.support.HelpCenterScreen
 import com.ram.agroadvisor.ui.theme.ThemeMode
 
 fun NavGraphBuilder.navGraph(
@@ -29,7 +29,6 @@ fun NavGraphBuilder.navGraph(
     composable(Screen.Welcome.route) { WelcomeScreen() }
     composable(Screen.Login.route) { LoginScreen() }
     composable(Screen.SignUp.route) { SignUpScreen() }
-    composable(Screen.FieldDetails.route) { FieldDetailsScreen() }
 
     // --- BOTTOM NAV TABS ---
     composable(Screen.Home.route) { HomeScreen() }
@@ -64,5 +63,6 @@ fun NavGraphBuilder.navGraph(
     }
     composable(Screen.HelpCenter.route) { HelpCenterScreen() }
     composable(Screen.ContactSupport.route) { ContactSupportScreen() }
+    composable(Screen.PrivacySecurity.route) { PrivacySecurityScreen() }
 
 }

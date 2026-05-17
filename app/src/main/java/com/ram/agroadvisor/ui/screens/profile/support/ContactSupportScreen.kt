@@ -1,4 +1,4 @@
-package com.ram.agroadvisor.ui.screens.profile
+package com.ram.agroadvisor.ui.screens.profile.support
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ram.agroadvisor.ui.common.dismissKeyboardOnTap
 import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,6 +23,9 @@ fun ContactSupportScreen() {
     var message by remember { mutableStateOf("") }
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .dismissKeyboardOnTap(),
         topBar = {
             TopAppBar(
                 title = { Text("Dəstək ilə əlaqə") },

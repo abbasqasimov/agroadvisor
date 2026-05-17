@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.common.dismissKeyboardOnTap
 import com.ram.agroadvisor.ui.navigation.LocalNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +78,9 @@ fun AccountSettingsScreen() {
     }
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .dismissKeyboardOnTap(),
         topBar = {
             TopAppBar(
                 title = {

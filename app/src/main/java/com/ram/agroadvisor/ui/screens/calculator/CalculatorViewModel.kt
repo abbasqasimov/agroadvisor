@@ -1,9 +1,9 @@
-package com.ram.agroadvisor.ui.screens.resources
+package com.ram.agroadvisor.ui.screens.calculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ram.agroadvisor.data.CalculatorRequest
-import com.ram.agroadvisor.data.CalculatorResponse
+import com.ram.agroadvisor.data.model.CalculatorRequest
+import com.ram.agroadvisor.data.model.CalculatorResponse
 import com.ram.agroadvisor.data.model.CropRequirement
 import com.ram.agroadvisor.data.model.SoilMultiplier
 import com.ram.agroadvisor.data.remote.AgroApi

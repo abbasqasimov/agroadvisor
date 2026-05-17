@@ -1,4 +1,4 @@
-package com.ram.agroadvisor.ui.screens.profile
+package com.ram.agroadvisor.ui.screens.profile.support
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -23,10 +23,66 @@ import com.ram.agroadvisor.ui.navigation.LocalNavController
 fun HelpCenterScreen() {
     val navController = LocalNavController.current
     val faqs = listOf(
-        "Bitki inkişafını necə izləmək olar?" to "Bitkilərim bölməsinə keçin və real vaxt yeniləmələrini görmək üçün konkret sahənizi seçin.",
-        "AI Köməkçidən necə istifadə etmək olar?" to "Torpaq, hava və ya bitki xəstəlikləri haqqında sual vermək üçün menyudakı robot ikonasına basın.",
-        "Məkanı necə yeniləmək olar?" to "Cari kənd təsərrüfatı regionunuzu yeniləmək üçün Hesab Parametrləri > Profilə keçin.",
-        "Məlumatlarım təhlükəsizdirmi?" to "Bəli, AgroAdvisor təsərrüfat məlumatlarınızı qorumaq üçün sənaye standartı şifrələmədən istifadə edir."
+        "Hava məlumatı haradan gəlir?" to
+            "Hava məlumatı WeatherAPI xidmətindən real vaxtda alınır. Ana səhifədə cari temperatur " +
+            "və qısa proqnoz göstərilir; 'Hava' kartına basaraq detallı görünüşə və 7 günlük " +
+            "proqnoza keçə bilərsiniz.",
+
+        "Bugünkü Tövsiyələr necə hesablanır?" to
+            "Ana səhifədəki tövsiyələr cari temperatur, hissi temperatur, külək, yağış ehtimalı, " +
+            "UV, görünüş və sabahkı proqnoz əsasında 11 sahə üzrə (çiləmə, suvarma, gübrələmə, " +
+            "məhsul yığımı, şum, budama, toxum səpini, UV qoruma, don riski, istilik stresi, açıq " +
+            "hava işləri) avtomatik qiymətləndirilir.",
+
+        "Gübrə Kalkulyatoru necə işləyir?" to
+            "Kalkulyator tabını açın → 'Kalkulyatoru Aç' → bitki növünü, böyümə mərhələsini, " +
+            "torpaq növünü və sahə ölçüsünü (hektar) daxil edin → 'Hesabla' düyməsinə basın. " +
+            "Nəticədə NPK miqdarı, baza dəyərləri və AI tövsiyələri göstəriləcək.",
+
+        "Niyə bəzi bitki və mərhələ kombinasiyaları yoxdur?" to
+            "Böyümə mərhələləri seçilmiş bitkiyə görə filtrlənir. Kalkulyator yalnız serverin " +
+            "kataloqunda mövcud olan (bitki, mərhələ) cütlərini göstərir — bu, dəstəklənməyən " +
+            "kombinasiyanın göndərilməsinin qarşısını alır.",
+
+        "Bitki şəklini necə analiz edə bilərəm?" to
+            "Aşağı menyudan 'Analiz' (+) tabını seçin → 'Kamera' ilə yeni şəkil çəkin və ya " +
+            "'Qalereya'dan mövcud bir şəkil seçin → 'Analiz Et' düyməsinə basın. Tətbiq bitkinin " +
+            "adını, xəstəliyi, etibarlılıq faizini və qısa izahı göstərəcək.",
+
+        "Analiz nəticəsindən sonra AI-dan necə kömək ala bilərəm?" to
+            "Analiz nəticə səhifəsindəki 'AI-dan daha çox məsləhət al' düyməsinə basın. AI Köməkçi " +
+            "açılır və xəstəlik adı ilə hazırlanmış sual mətn sahəsində avtomatik görünür — yalnız " +
+            "Göndər düyməsinə basın və ya mətni redaktə edib sonra göndərin.",
+
+        "AI Köməkçi ilə necə yazışmaq olar?" to
+            "Ana səhifədəki 'AI Köməkçi' kartına basın. Sualınızı aşağıdakı sahəyə yazıb göndər " +
+            "düyməsinə basın. Köməkçi kənd təsərrüfatı, torpaq, hava və bitki xəstəlikləri ilə " +
+            "bağlı suallara cavab verir.",
+
+        "Köhnə söhbətlərimə baxa bilərəmmi?" to
+            "Bəli. AI Köməkçi ekranının yuxarı sol küncündəki menyu (☰) ikonasına basın — söhbət " +
+            "tarixçəsi açılır. İstənilən söhbətə basaraq onu davam etdirə, və ya zibil qutusu " +
+            "ikonası ilə silə bilərsiniz.",
+
+        "Şifrəmi necə dəyişə bilərəm?" to
+            "Profil → Tənzimləmələr → Hesab Parametrləri bölməsinə keçin. Cari şifrənizi, yeni " +
+            "şifrənizi və təsdiqi daxil edin. Yeni şifrə minimum 8 simvol olmalı və ən az 1 böyük " +
+            "hərf, 1 kiçik hərf və 1 rəqəm ehtiva etməlidir.",
+
+        "Görünüş (işıqlı/qaranlıq rejim) necə dəyişdirilir?" to
+            "Profil → Tənzimləmələr → Görünüş bölməsinə keçin. İşıqlı rejim, Qaranlıq rejim və " +
+            "ya Sistem standartı seçimlərindən birini seçin — dəyişiklik dərhal tətbiq olunur.",
+
+        "Bildirişləri necə idarə edə bilərəm?" to
+            "Profil → Tənzimləmələr → Bildirişlər seçimi sizi cihazın sistem parametrlərinə " +
+            "yönləndirir. Buradan AgroAdvisor üçün bildirişləri açıb-bağlaya, kanal səviyyəsində " +
+            "səssiz rejim seçə bilərsiniz.",
+
+        "Məlumatlarım təhlükəsizdirmi?" to
+            "Bəli. Bütün şəbəkə əlaqələri HTTPS şifrələməsi ilə qorunur, JWT tokenlər cihazın " +
+            "özəl sahəsində saxlanır və şifrələr serverdə yalnız hash formasında yerləşir. " +
+            "Ətraflı məlumat üçün Profil → Tənzimləmələr → Məxfilik və Təhlükəsizlik bölməsinə " +
+            "baxa bilərsiniz."
     )
 
     Scaffold(

@@ -1,8 +1,8 @@
 package com.ram.agroadvisor.di
 
-import com.ram.agroadvisor.data.WeatherApi
 import com.ram.agroadvisor.data.local.AuthInterceptor
 import com.ram.agroadvisor.data.remote.AgroApi
+import com.ram.agroadvisor.data.remote.WeatherApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

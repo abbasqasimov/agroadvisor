@@ -9,7 +9,7 @@ import androidx.work.WorkerParameters
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.ram.agroadvisor.data.WeatherApi
+import com.ram.agroadvisor.data.remote.WeatherApi
 import com.ram.agroadvisor.data.local.LocalNotification
 import com.ram.agroadvisor.data.local.NotificationRepository
 import com.ram.agroadvisor.util.NotificationHelper
@@ -25,7 +25,7 @@ class WeatherWorker @AssistedInject constructor(
     private val notificationRepository: NotificationRepository
 ) : CoroutineWorker(context, workerParams) {
 
-    private val apiKey = "40ab85541de6480e9aa205106252910"
+    private val apiKey = "b926f17d610b4ed09aa215523261705"
 
     override suspend fun doWork(): Result {
         return try {

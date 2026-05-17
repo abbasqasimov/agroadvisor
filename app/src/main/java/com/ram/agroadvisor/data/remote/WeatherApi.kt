@@ -1,4 +1,4 @@
-package com.ram.agroadvisor.data
+package com.ram.agroadvisor.data.remote
 
 import com.ram.agroadvisor.data.model.SearchResult
 import com.ram.agroadvisor.data.model.WeatherResponse

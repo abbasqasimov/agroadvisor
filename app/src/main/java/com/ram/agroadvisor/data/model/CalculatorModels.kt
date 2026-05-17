@@ -1,4 +1,4 @@
-package com.ram.agroadvisor.data
+package com.ram.agroadvisor.data.model
 
 data class CalculatorRequest(
     val cropType: String,

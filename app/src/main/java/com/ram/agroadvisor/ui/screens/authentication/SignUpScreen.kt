@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ram.agroadvisor.ui.common.dismissKeyboardOnTap
 import com.ram.agroadvisor.ui.navigation.LocalNavController
 import com.ram.agroadvisor.ui.navigation.Screen
 
@@ -31,7 +32,9 @@ fun SignUpScreen() {
 
     val navController = LocalNavController.current
     val onSignUpSuccess: () -> Unit = {
-        navController.navigate(Screen.FieldDetails.route)
+        navController.navigate(Screen.Home.route) {
+            popUpTo(Screen.Welcome.route) { inclusive = true }
+        }
     }
     val onBackToLogin: () -> Unit = {navController.popBackStack()}
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -101,6 +104,7 @@ fun SignUpScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBackground)
+            .dismissKeyboardOnTap()
     ) {
         Column(
             modifier = Modifier

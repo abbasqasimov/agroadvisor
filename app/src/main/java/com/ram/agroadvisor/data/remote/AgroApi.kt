@@ -1,8 +1,8 @@
 package com.ram.agroadvisor.data.remote
 
-import com.ram.agroadvisor.data.CalculatorRequest
-import com.ram.agroadvisor.data.CalculatorResponse
 import com.ram.agroadvisor.data.model.AnalyzeResponse
+import com.ram.agroadvisor.data.model.CalculatorRequest
+import com.ram.agroadvisor.data.model.CalculatorResponse
 import com.ram.agroadvisor.data.model.AuthResponse
 import com.ram.agroadvisor.data.model.ChatMessageDto
 import com.ram.agroadvisor.data.model.ChatRequestDto
